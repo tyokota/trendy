@@ -136,11 +136,14 @@ y$sex <- relevel( factor( y$sex ) , ref = "2" )
 # set ever smoked=yes // white // 9th graders as the reference groups
 for ( i in c( 'smoking' , 'raceeth' , 'grade' ) ) y[ , i ] <- relevel( factor( y[ , i ] ) , ref = "1" )
 
+
 # let us introduce you to a new friend
 # ?contr.poly
-# this function handles possible autocorrelation due to time while fitting a line through time points
-# it's similar to using the survey year as an independent variable in your regression,
-# but it's a bit safer.  https://en.wikipedia.org/wiki/Autocorrelation  s'il vous plait.
+# this function implements polynomials used in complex survey data.  for more detail on this subject, see page 216 of 
+# Applied Multiple Regression/Correlation Analysis for the Behavioral Sciences By Jacob Cohen, Patricia Cohen, Stephen G. West, Leona S. Aiken
+# "The polynomials we have used as predictors to this point are natural polynomials, generated from the linear predictor by centering and the powering the linear predictor."
+# https://www.google.com/search?q=The+polynomials+we+have+used+as+predictors+to+this+point+are+natural+polynomials%2C+generated+from+the+linear+predictor+by+centering+and+the+powering+the+linear+predictor.&ie=utf-8&oe=utf-8
+
 
 # extract a linear contrast vector of length eleven,
 # because we have eleven distinct years of yrbss data `seq( 1999 , 2011 , 2 )`
