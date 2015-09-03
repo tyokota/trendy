@@ -1,26 +1,49 @@
-library(stringr)
-library(plyr)
+# setwd( "C:/My Directory/YRBSS" )
 
-setwd( "C:/My Directory/YRBSS" )
+# install.packages( c( "downloader" , "plyr" , "survey" ) )
 
-anv <- c( "q2" , "q3" , "q4" , "q23" , "q26" , "q27" , "q28" , "q29" , "year" , "psu" , "stratum" , "weight" , "raceeth" )
 
+library(downloader) 	# downloads and then runs the source() function on scripts from github
+library(plyr) 			# contains the rbind.fill() function, which stacks two data frames even if they don't contain the same columns.  the rbind() function does not do this
+library(survey) 		# load survey package (analyzes complex design surveys)
+
+
+options( survey.lonely.psu = 'adjust' )
+
+# load dr. thomas lumley's `svypremeans` function, which replicates SUDAAN's PREDMARG command
+source_url( "https://raw.githubusercontent.com/tyokota/trendy/master/svypredmeans.R" , prompt = FALSE )
+# for more detail about this method, see https://gist.github.com/tslumley/2e74cd0ac12a671d2724
+
+
+# initiate an empty `y` object
 y <- NULL
 
+# loop through each year of YRBSS microdata
 for ( year in seq( 1991 , 2011 , 2 ) ){
 
+	# load the current year
 	load( paste0( "yrbs" , year , ".rda" ) )
+	
+	# tack on a `year` column
 	x$year <- year
+	
+	# stack that year of data alongside the others,
+	# ignoring mis-matching columns
 	y <- rbind.fill( x , y )
+	
+	# clear the single-year of microdata from RAM
 	rm( x )
 	
 }
 
-y <- y[ anv ]
+# remove all unnecessary columns from the 1991-2011 multi-year stack
+y <- y[ c( "q2" , "q3" , "q4" , "q23" , "q26" , "q27" , "q28" , "q29" , "year" , "psu" , "stratum" , "weight" , "raceeth" ) ]
 
+# convert every column to numeric type
 y[ , ] <- sapply( y[ , ] , as.numeric )
 
-
+# construct year-specific recodes so that
+# "ever smoked a cigarette" // grade // sex // race-ethnicity align across years
 y <-
 	transform(
 		
@@ -61,34 +84,176 @@ y <-
 	)
 	
 
+# again remove unnecessary variables, keeping only the complex sample survey design columns
+# plus independent/dependent variables to be used in the regression analyses
 y <- y[ c( "year" , "psu" , "stratum" , "weight" , "smoking" , "raceeth" , "sex" , "grade" ) ]
 
-for ( i in c( 'smoking' , 'raceeth' , 'grade' ) ) y[ , i ] <- relevel( factor( y[ , i ] ) , ref = "1" )
-
+# set female to the reference group
 y$sex <- relevel( factor( y$sex ) , ref = "2" )
 
-c5 <- contr.poly( 5 )[ , 1 ]
+# set ever smoked=yes // white // 9th graders as the reference groups
+for ( i in c( 'smoking' , 'raceeth' , 'grade' ) ) y[ , i ] <- relevel( factor( y[ , i ] ) , ref = "1" )
 
-c7 <- contr.poly( 7 )[ , 1 ]
+# let us introduce you to a new friend
+# ?contr.poly
+# this function handles possible autocorrelation due to time while fitting a line through time points
+# it's similar to using the survey year as an independent variable in your regression,
+# but it's a bit safer.  https://en.wikipedia.org/wiki/Autocorrelation  s'il vous plait.
 
-y$T5L <- c5[ match( y$year , seq( 1991 , 1999 , 2 ) ) ]
+# extract a linear contrast vector of length eleven,
+# because we have eleven distinct years of yrbss data `seq( 1999 , 2011 , 2 )`
+c11l <- contr.poly( 11 )[ , 1 ]
 
-y$T7L <- c7[ match( y$year , seq( 1999 , 2011 , 2 ) ) ]
+# also extract a quadratic (squared) contrast vector
+c11q <- contr.poly( 11 )[ , 2 ]
+
+# just in case, extract a cubic contrast vector
+c11c <- contr.poly( 11 )[ , 3 ]
+
+# for each record in the data set, tack on the linear, quadratic, and cubic contrast value
+# these contrast values will serve as replacement for the linear `year` variable in any regression.
+y$t11l <- c11l[ match( y$year , seq( 1999 , 2011 , 2 ) ) ]
+y$t11q <- c11q[ match( y$year , seq( 1999 , 2011 , 2 ) ) ]
+y$t11c <- c11c[ match( y$year , seq( 1999 , 2011 , 2 ) ) ]
+
+# construct a complex sample survey design object
+des <- 
+	svydesign(
+		id = ~psu , 
+		strata = ~interaction( stratum , year ) ,
+		data = y , 
+		weights = ~weight , 
+		nest = TRUE
+	)
+	
+# immediately remove records with missing smoking status
+des_ns <- subset( des_ns , !is.na( smoking ) )
+	
+
+# calculate unadjusted, un-anythinged "ever smoked" rates by year
+# note that this reproduces the unadjusted "ever smoked" statistics at the top of
+# pdf page 6 of http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_conducting_trend_analyses.pdf
+svyby( ~ smoking , ~ year , svymean , design = des_ns )
 
 
-library(survey)
 
-options(survey.lonely.psu='adjust')
-
-des <- svydesign(id=~psu, strata=~interaction(stratum,year) ,data=subset(y, !is.na(smoking)), weights=~weight, nest=TRUE)
-
-svyby(~smoking, ~year, svymean, design=des, na.rm=TRUE)
-
-
-summary(svyglm(formula=I(smoking==1)~sex+raceeth+grade+T5L,
-               design = subset(des, smoking %in% c(1,2) & year <= 1999), family = quasibinomial))
-
-summary(svyglm(formula=I(smoking==1)~sex+raceeth+grade+T7L,
-               design = subset(des, smoking %in% c(1,2) & year >= 1999), family = quasibinomial))
+# calculate the "ever smoked" binomial regression,
+# adjusted by sex, age, race-ethnicity, and
+# a linear year contrast
+summary(
+	svyglm(
+		I( smoking == 1 ) ~ sex + raceeth + grade + t11l , 
+		design = subset( des_ns , smoking %in% 1:2 ) , 
+		family = quasibinomial
+	)
+)
+# the linear year-contrast variable is hugely significant here
 
 
+# calculate the "ever smoked" binomial regression,
+# adjusted by sex, age, race-ethnicity, and
+# both linear and quadratic year contrasts
+summary(
+	svyglm(
+		I( smoking == 1 ) ~ sex + raceeth + grade + t11l + t11q , 
+		design = subset( des_ns , smoking %in% 1:2 ) , 
+		family = quasibinomial 
+	)
+)
+# the linear year-contrast variable is hugely significant here
+# but the quadratic year-contrast variable is borderline,
+# so perhaps revert to the linear-only model.
+
+
+# calculate the "ever smoked" binomial regression,
+# adjusted by sex, age, race-ethnicity, and
+# linear, quadratic, and cubic year contrasts
+summary(
+	svyglm(
+		I( smoking == 1 ) ~ sex + raceeth + grade + t11l + t11q + t11c , 
+		design = subset( des_ns , smoking %in% 1:2 ) , 
+		family = quasibinomial 
+	)
+)
+# the quadratic year-contrast was borderline significant in the previous run,
+# so it makes sense that the cubic year-contrast is not significant at all
+# therefore, this model should not be used.
+# it's probably best to stick with the linear year-contrast model.
+
+
+# calculate the survey-year-independent predictor effects
+# and store these results into a separate object
+marginals <- 
+	svyglm(
+		formula = I( smoking == 1 ) ~ sex + raceeth + grade ,
+		design = des_ns , 
+		family = quasibinomial
+	)
+
+# run these marginals through dr. thomas lumley's schnazzy new `svypredmeans` function
+( means_for_joinpoint <- svypredmeans( marginals , ~factor( year ) ) )
+# now you've got means and standard errors matching SUDAAN's PREDMARG command
+
+# coerce these to a data.frame object
+means_for_joinpoint <- as.data.frame( means_for_joinpoint )
+
+# extract the row names as the survey year
+means_for_joinpoint$year <- rownames( means_for_joinpoint )
+
+# output this data.frame object into your current working directory
+# in a format readable by the national cancer institute's joinpoint software
+# write.table( means_for_joinpoint , "means for joinpoint.txt" , sep = "\t" , row.names = FALSE , col.names = TRUE ) 
+
+
+# # # # external software to calculate which years to use as joinpoints # # # #
+
+# # the national cancer institute's joinpoint software
+# # ( a free download from https://surveillance.cancer.gov/joinpoint/download )
+# # will import the text file and (if you follow the settings used in `joinpoint settings.png`
+# # https://github.com/tyokota/trendy/blob/master/joinpoint%20settings.png
+# # determine that a joinpoint should be constructed at the year 1999.
+# # this tells you that you ought to re-do the previous svyglm() analyses twice.
+# # once using all years prior to and including 1999
+# # then again starting at 1999 and ending at the final year of data
+# # note that re-running this analysis two more times
+# # requires re-integrating the year-contrast values for a five-timepoint span (1991, 1993, 1995, 1997, 1999)
+# # and, separately, a seven-timepoint span (1999, 2001, 2003, 2005, 2007, 2009, 2011)
+
+# # # # end of external software joinpoint instructions # # # #
+
+
+# calculate a five-timepoint linear contrast vector
+c5l <- contr.poly( 5 )[ , 1 ]
+
+# calculate a seven-timepoint linear contrast vector
+c7l <- contr.poly( 7 )[ , 1 ]
+
+# tack the five-timepoint linear contrast vectors onto the current survey design object
+des_ns <- update( des_ns , t5l = c5l[ match( year , seq( 1991 , 1999 , 2 ) ) ] )
+
+# tack the seven-timepoint linear contrast vectors onto the current survey design object
+des_ns <- update( des_ns , t7l = c7l[ match( year , seq( 1999 , 2011 , 2 ) ) ] )
+
+
+# reproduce the sentence on pdf page 6 of http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_conducting_trend_analyses.pdf
+# In this example, T5L_L had a p-value=0.52261 and beta=0.03704. Therefore, there was "no significant change in the prevalence of ever smoking a cigarette during 1991-1999."
+summary(
+	svyglm(
+		I( smoking == 1 ) ~ sex + raceeth + grade + t5l ,
+		design = subset( des_ns , smoking %in% 1:2 & year <= 1999 ) , 
+		family = quasibinomial
+	)
+)
+
+# reproduce the sentence on pdf page 6 of http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_conducting_trend_analyses.pdf
+# In this example, T7L_R had a p-value<0.0001 and beta=-0.99165. Therefore, there was a "significant linear decrease in the prevalence of ever smoking a cigarette during 1999-2011."
+summary(
+	svyglm(
+		I( smoking == 1 ) ~ sex + raceeth + grade + t7l ,
+		design = subset( des_ns , smoking %in% 1:2 & year >= 1999 ) , 
+		family = quasibinomial
+	)
+)
+
+
+# fini
