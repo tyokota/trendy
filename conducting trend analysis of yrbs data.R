@@ -1,14 +1,35 @@
 # setwd( "C:/My Directory/YRBSS" )
 
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#################################################################################################################################
+# prior to running this analysis script, the yrbss 1991-2011 single-year files must all be loaded as r data files (.rda) on the #
+# local machine. running the download automation script will create the appropriate files for your pleasurable convenience      #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# https://github.com/ajdamico/asdfree/blob/master/Youth%20Risk%20Behavior%20Surveillance%20System/download%20all%20microdata.R  #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# that script will create files like "yrbs2011.rda" in C:/My Directory/YRBSS or wherever the working directory was set          #
+#################################################################################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
+# remove the # in order to run this install.packages line only once
 # install.packages( c( "downloader" , "plyr" , "survey" ) )
 
+library(downloader)	# downloads and then runs the source() function on scripts from github
+library(plyr) 		# contains the rbind.fill() function, which stacks two data frames even if they don't contain the same columns.  the rbind() function does not do this
+library(survey) 	# load survey package (analyzes complex design surveys)
 
-library(downloader) 	# downloads and then runs the source() function on scripts from github
-library(plyr) 			# contains the rbind.fill() function, which stacks two data frames even if they don't contain the same columns.  the rbind() function does not do this
-library(survey) 		# load survey package (analyzes complex design surveys)
 
+# set R to produce conservative standard errors instead of crashing
+# http://r-survey.r-forge.r-project.org/survey/exmample-lonely.html
+options( survey.lonely.psu = "adjust" )
+# this setting matches the MISSUNIT option in SUDAAN
+# SAS uses "remove" instead of "adjust" by default,
+# the table target replication was generated with SAS,
+# so if you want to get closer to that, use "remove"
 
-options( survey.lonely.psu = 'adjust' )
 
 # load dr. thomas lumley's `svypremeans` function, which replicates SUDAAN's PREDMARG command
 source_url( "https://raw.githubusercontent.com/tyokota/trendy/master/svypredmeans.R" , prompt = FALSE )
