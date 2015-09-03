@@ -172,7 +172,7 @@ des <-
 	)
 	
 # immediately remove records with missing smoking status
-des_ns <- subset( des_ns , !is.na( smoking ) )
+des_ns <- subset( des , !is.na( smoking ) )
 	
 
 # calculate unadjusted, un-anythinged "ever smoked" rates by year
