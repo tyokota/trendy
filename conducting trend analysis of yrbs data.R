@@ -267,7 +267,7 @@ marginals <-
 means_for_joinpoint <- as.data.frame( means_for_joinpoint )
 
 # extract the row names as the survey year
-means_for_joinpoint$year <- rownames( means_for_joinpoint )
+means_for_joinpoint$year <- as.numeric( rownames( means_for_joinpoint ) )
 
 # output this data.frame object into your current working directory
 # in a format readable by the national cancer institute's joinpoint software
