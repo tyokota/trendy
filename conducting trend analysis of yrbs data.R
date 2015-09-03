@@ -269,6 +269,9 @@ means_for_joinpoint <- as.data.frame( means_for_joinpoint )
 # extract the row names as the survey year
 means_for_joinpoint$year <- as.numeric( rownames( means_for_joinpoint ) )
 
+# must be sorted, just in case it's not already
+means_for_joinpoint <- means_for_joinpoint[ order( means_for_joinpoint$year ) , ]
+
 # output this data.frame object into your current working directory
 # in a format readable by the national cancer institute's joinpoint software
 # write.table( means_for_joinpoint , "means for joinpoint.txt" , sep = "\t" , row.names = FALSE , col.names = TRUE ) 
