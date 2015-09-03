@@ -1,5 +1,21 @@
-# setwd( "C:/My Directory/YRBSS" )
+# reproduce the center for disease control & prevention's linear trend analysis
+# on complex sample survey data (the youth risk behavioral surveillance system)
+# http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_conducting_trend_analyses.pdf
 
+
+# this script was written by
+# thomas yokota
+# thomasyokota@gmail.com
+
+# with contributions from
+# anthony joseph damico
+# ajdamico@gmail.com
+
+# thanks to dr. thomas lumley for creating the svypredmeans() function
+# to replicate SUDAAN's PREDMARG command for this specific purpose
+
+# thanks to dr. richard lowry at the cdc for methodological assistance in
+# interpreting and reproducing that yrbss trend publication
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -14,8 +30,13 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+# uncomment this line by removing the `#` at the front..
+# setwd( "C:/My Directory/YRBSS" )
+
+
 # remove the # in order to run this install.packages line only once
 # install.packages( c( "downloader" , "plyr" , "survey" ) )
+
 
 library(downloader)	# downloads and then runs the source() function on scripts from github
 library(plyr) 		# contains the rbind.fill() function, which stacks two data frames even if they don't contain the same columns.  the rbind() function does not do this
@@ -157,6 +178,7 @@ des_ns <- subset( des_ns , !is.na( smoking ) )
 svyby( ~ smoking , ~ year , svymean , design = des_ns )
 
 
+# # # calculate the *maximum number of joinpoints* needed # # #
 
 # calculate the "ever smoked" binomial regression,
 # adjusted by sex, age, race-ethnicity, and
@@ -169,6 +191,11 @@ summary(
 	)
 )
 # the linear year-contrast variable is hugely significant here
+# therefore, there is probably going to be some sort of trend.
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# a linear trend only needs a maximum of zero joinpoints. #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
 # calculate the "ever smoked" binomial regression,
@@ -182,8 +209,12 @@ summary(
 	)
 )
 # the linear year-contrast variable is hugely significant here
-# but the quadratic year-contrast variable is borderline,
-# so perhaps revert to the linear-only model.
+# but the quadratic year-contrast variable is also significant.
+# therefore, we must use joinpoint software for this analysis.
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# a quadratic trend needs a maximum of one joinpoints.  #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
 # calculate the "ever smoked" binomial regression,
@@ -196,10 +227,24 @@ summary(
 		family = quasibinomial 
 	)
 )
-# the quadratic year-contrast was borderline significant in the previous run,
-# so it makes sense that the cubic year-contrast is not significant at all
-# therefore, this model should not be used.
-# it's probably best to stick with the linear year-contrast model.
+# the cubic year-contrast term is *not* significant in this model.
+# therefore, we should stop testing the shape of this line.
+# in other words, we can stop at a quadratic trend and *do not* need a cubic trend.
+
+# note: if the cubic trend *were* significant, then we would increase
+# the maximum number of joinpoints to *two* instead of *one*
+# but since the cubic term is not significant, we should stop with the previous regression.
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# a cubic trend needs a maximum of two joinpoints.    #
+# if we keep getting significant trends, we keep      #
+# increasing the number of maximum joinpoints.        #
+# year^4 requires a maximum of three joinpoints.      #
+# year^5 requires a maximum of four joinpoints. etc.  #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # end of *maximum number of joinpoints* calculations # # #
+
 
 
 # calculate the survey-year-independent predictor effects
@@ -230,9 +275,18 @@ means_for_joinpoint$year <- rownames( means_for_joinpoint )
 
 # # the national cancer institute's joinpoint software
 # # ( a free download from https://surveillance.cancer.gov/joinpoint/download )
-# # will import the text file and (if you follow the settings used in `joinpoint settings.png`
-# # https://github.com/tyokota/trendy/blob/master/joinpoint%20settings.png
-# # determine that a joinpoint should be constructed at the year 1999.
+# # will import the text file and (if you follow the settings used in `joinpoint settings.png`)
+# # https://raw.githubusercontent.com/tyokota/trendy/master/joinpoint%20settings.png
+
+# # except: see the red square in that picture?  look for the red square.
+# # the maximum number of joinpoints should be determined based on the
+# # linear / quadratic / cubic / etc. experiments conducted above.
+# # in this example, quadratic was the final significant term,
+# # so we should use maximum joinpoints = 1; however, if in your data
+# # cubic is the final significant term, use maximum joinpoints = 2.
+
+# # using a maximum joinpoint = 1 in this example, the software
+# # determines that a joinpoint should be constructed at the year 1999.
 # # this tells you that you ought to re-do the previous svyglm() analyses twice.
 # # once using all years prior to and including 1999
 # # then again starting at 1999 and ending at the final year of data
