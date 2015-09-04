@@ -8,7 +8,7 @@
 
 > http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_conducting_trend_analyses.pdf 
 
-> Thank you, 
+> Thank you, <br>
 > Thomas
 
 Thomas,
@@ -45,7 +45,7 @@ I hope this helps,
  
 Richard Lowry
  
-Medical Officer
-Division of Adolescent and School Health
-National Center for HIV/AIDS, Viral Hepatitis, STD, and TB Prevention
+Medical Officer <br>
+Division of Adolescent and School Health <br>
+National Center for HIV/AIDS, Viral Hepatitis, STD, and TB Prevention <br>
 Centers for Disease Control and Prevention
