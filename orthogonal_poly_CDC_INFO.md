@@ -1,21 +1,15 @@
 ### E-mail correspondence with CDC-INFO about fitting orthogonal polynomials
 
-> This e-mail correspondence with Dr. Richard Lowry, the author of the original CDC article, may help those readers who are interested in further understanding the process in regards to fitting orthogonal polynomials.
+> Subject: Question about methodology 
 
-#### Question
+> Your Question: 
 
-Subject: Question about methodology 
+> Hi, I recently came across this article. I'm interested in knowing how to replicate the method. I had created the orthogonal polynomials as stated in step 1. However, I noticed that linear and quadratic were significant. In the article, the author stopped after including a quadratic trend. Can someone please explain this step better to me? 
 
-Your Question: 
+> http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_conducting_trend_analyses.pdf 
 
-Hi, I recently came across this article. I'm interested in knowing how to replicate the method. I had created the orthogonal polynomials as stated in step 1. However, I noticed that linear and quadratic were significant. In the article, the author stopped after including a quadratic trend. Can someone please explain this step better to me? 
-
-http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_conducting_trend_analyses.pdf 
-
-Thank you, 
-Thomas
-
-#### Answer
+> Thank you, 
+> Thomas
 
 Thomas,
  
