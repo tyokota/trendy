@@ -1,6 +1,8 @@
-# E-mail correspondence with CDC-INFO about fitting orthogonal polynomials
+### E-mail correspondence with CDC-INFO about fitting orthogonal polynomials
 
-## Question
+> This e-mail correspondence with Dr. Richard Lowry, the author of the original CDC article, may help those readers who are interested in further understanding the process in regards to fitting orthogonal polynomials.
+
+#### Question
 
 Subject: Question about methodology 
 
@@ -13,7 +15,7 @@ http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_conducting_trend_analyses.pdf
 Thank you, 
 Thomas
 
-## Answer
+#### Answer
 
 Thomas,
  
