@@ -32,17 +32,7 @@ d$w<- with(d, (y/s)^2) #build the weight variable
 # R via the segmented package, we first estimate the 'starting' linear model via
 # the usual "lm" function using the log values and the weights,
 
-# linear
 o<-lm(log(y)~year, weights=w, data=d) #note the response and the weights..
-
-# quadratic
-# o <- lm(log(y)~poly(year, 2), weights=w, data=d)
-
-# cubic
-# o <- lm(log(y)~poly(year, 3), weights=w, data=d)
-
-
-
 
 #and then we 'update' it, by adding a segmented variable (year in this example)
 # with 1 breakpoint
