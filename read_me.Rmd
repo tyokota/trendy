@@ -1,0 +1,231 @@
+---
+title: "Trend Analysis"
+author: "Thomas Yokota"
+date: "September 22, 2015"
+output: html_document
+---
+
+## Background
+The purpose of this analysis was to reproduce the [Center for Disease Control & Prevention's (CDC) linear trend analysis](http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_conducting_trend_analyses.pdf) on complex sample survey data. 
+
+## Data
+Youth Risk Behavioral Surveillance System (YRBS) 1991-2011 single year microdata was used for this analysis. The recommended R solution for downloading the microdata is to use [Anthony Damico's automation scripts](https://github.com/ajdamico/asdfree/tree/master/Youth%20Risk%20Behavior%20Surveillance%20System). It is recommended to first read the CDC [manual](http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_combining_data.pdf) when combining multiple single year microdata.
+
+```{r, echo = FALSE, include = FALSE}
+set.dir <- "/Users/thomasyokota/Dropbox"
+setwd(set.dir)
+
+library(survey)
+library(plyr)
+library(ggplot2)
+library(ggthemes)
+library(texreg)
+library(downloader)
+library(segmented)
+
+y <- NULL
+
+for(i in seq(1991, 2011, 2)) {
+  
+  load(paste0("yrbs", i, ".rda"))
+  x$year <- i
+  y <- rbind.fill(x, y)
+  rm(x)
+}
+
+y <- y[c("q2", "q3", "q4", "q23", "q26", "q27", "q28", "q29", "year", "psu", "stratum", "weight", "raceeth")]
+
+y[, ] <- sapply(y[, ], as.numeric)
+
+y <- transform(y,
+               smoking = as.numeric(ifelse(year == 1991, q23,
+                                           ifelse(year %in% c(1993, 2001:2009), q28,
+                                                  ifelse(year %in% 1995:1997, q26,
+                                                         ifelse(year %in% 1999, q27,
+                                                                ifelse(year%in% 2011, q29, NA)))))),
+               raceeth = ifelse(year %in% 1991:1997 ,
+                                ifelse(q4 %in% 1:3, q4,
+                                       ifelse(q4 %in% 4:6, 4, NA)),
+                                
+                                ifelse(year %in% 1999:2005,
+                                       ifelse(q4 %in% 6, 1,
+                                              ifelse(q4 %in% 3, 2,
+                                                     ifelse(q4 %in% c(4, 7), 3,
+                                                            ifelse(q4 %in% c(1, 2, 5, 8), 4, NA)))),
+                                       
+                                       ifelse(year %in% 2007:2011,
+                                              ifelse(raceeth %in% 5, 1,
+                                                     ifelse(raceeth %in% 3, 2,
+                                                            ifelse(raceeth %in% c(6, 7), 3,
+                                                                   ifelse(raceeth %in% c(1, 2, 4, 8), 4, NA)))), NA))),
+               grade = ifelse(q3 == 5, NA, as.numeric(q3)),
+               sex = ifelse(q2 %in% 1:2, q2, NA))
+
+y <- y[c("year", "psu", "stratum", "weight", "smoking", "raceeth", "sex", "grade")]
+
+y$sex <- relevel(factor(y$sex ), ref = "2")
+for(i in c('smoking', 'raceeth', 'grade')) y[, i] <- relevel(factor(y[, i]), ref = "1")
+ 
+```
+
+## Complex survey analysis
+Microdata was analyzed using the R [survey](http://r-survey.r-forge.r-project.org/survey/) package to produce estimates similar to that of SAS-callable SUUDAN. For this analysis, R was set to produce conservative standard errors similar to setting the MISSUNIT option in SUDAAN. You can read more about the [lonely PSU](http://r-survey.r-forge.r-project.org/survey/exmample-lonely.html) on the survey package website.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(survey)
+options(survey.lonely.psu='adjust')
+
+des <- svydesign(id      = ~psu,
+                 strata  = ~interaction(year, stratum),
+                 data    = subset(y, !is.na(psu)),
+                 weights = ~weight,
+                 nest    = TRUE)
+
+des_ns <- subset(des, !is.na(smoking))
+
+```
+
+## Testing for trends
+
+#### Unadjusted prevalence
+
+In this example, we examined change over time for smoking prevalence among youth. Unadjusted prevalence rates (see figure 1) suggested a significant change in smoking prevalence. Epidemiological models, however, typically control for possible confounding variables such as sex and race.
+
+<center>
+
+``` {r, echo=FALSE}
+f1 <- data.frame(svyby(~smoking, ~year, svymean, design=des_ns, na.rm = T, vartype=c("ci", "se")))
+
+ggplot(f1, aes(x = year, y = smoking1)) +
+  geom_point() + 
+  geom_errorbar(aes(ymax = ci_u.smoking1, ymin = ci_l.smoking1), width=.2) +
+  geom_line() +
+  theme_tufte() +
+  ggtitle("Figure 1. Unadjusted smoking prevalence 1999-2011") +
+  theme(plot.title = element_text(size=9, face="bold"))
+
+```
+
+</center>
+
+#### Fitting time variables
+
+[Orthogonal coefficients](https://www.google.com/search?q=The+polynomials+we+have+used+as+predictors+to+this+point+are+natural+polynomials%2C+generated+from+the+linear+predictor+by+centering+and+the+powering+the+linear+predictor.&ie=utf-8&oe=utf-8) were fitted for testing trends. The regression outputs are ordered by highest-order time variable(s) fitted in the model. Table 1 reveals that a quadratic trend may best describe the relationship between prevalence of smoking and change-over-time. The decision to test beyond linear trends, however, is a decision for the individual researcher to make. It is a decision that can be driven by theoretical issues, existing literature, or the availability of data.
+
+``` {r, include=FALSE}
+c11l <- contr.poly(11)[, 1]
+c11q <- contr.poly(11)[, 2]
+c11c <- contr.poly(11)[, 3]
+
+des_ns <- update(des_ns, t11l = c11l[match(year, seq(1999, 2011, 2))])
+des_ns <- update(des_ns, t11q = c11q[match(year, seq(1999, 2011, 2))])
+des_ns <- update(des_ns, t11c = c11c[match(year, seq(1999, 2011, 2))])
+
+t1 <- svyglm(formula = I(smoking == 1) ~ sex + raceeth + grade + t11l,
+             design  = subset(des_ns, smoking %in% c(1, 2)),
+             family  = quasibinomial)
+
+t2 <- svyglm(formula = I(smoking == 1) ~ sex + raceeth + grade + t11l + t11q,
+               design  = subset(des_ns, smoking %in% c(1, 2)),
+               family  = quasibinomial)
+
+t3 <- svyglm(formula = I(smoking == 1) ~ sex + raceeth + grade + t11l + t11q + t11c,
+               design  = subset(des_ns, smoking %in% c(1, 2)),
+               family  = quasibinomial) # no longer significant
+```
+
+<center>
+
+``` {r echo=FALSE, results='asis'}
+htmlreg(list(t1, t2, t3), doctype = F, html.tag = F, inline.css = T, 
+    head.tag = F, body.tag = F, center = F, single.row = T, caption = "Table 1. Testing for linear trends.")
+```
+
+</center>
+
+#### Adjusted prevalence
+
+The adjusted prevalence and standard error were produced using the `svypredmeans` function, which emulates the PREDMARG statement in SUDAAN. 
+
+``` {r, include=FALSE}
+source_url("https://raw.githubusercontent.com/tyokota/trendy/master/svypredmeans.R", prompt = FALSE)
+
+marginals <- svyglm(formula = I(smoking == 1) ~ sex + raceeth + grade,
+                    design  = des_ns,
+                    family  = quasibinomial)
+
+joinpoint <- as.data.frame(svypredmeans(marginals, ~factor(year)))
+joinpoint$year <- as.numeric(row.names(joinpoint))
+joinpoint <- joinpoint[order(joinpoint$year), ]
+```      
+
+``` {r echo=FALSE, results='asis'}
+f2 <- joinpoint
+f2$ci_l.mean <- f2$mean - (1.96 * f2$SE)
+f2$ci_u.mean <- f2$mean + (1.96 * f2$SE)
+
+ggplot(f2, aes(x = year, y = mean)) +
+  geom_point() + 
+  geom_errorbar(aes(ymax = ci_u.mean, ymin = ci_l.mean), width=.2) +
+  geom_line() +
+  theme_tufte() +
+  ggtitle("Figure 2. Adjusted smoking prevalence 1999-2011") +
+  theme(plot.title = element_text(size=9, face="bold"))
+```
+
+#### Identify the change point
+
+The original CDC analysis requires third-party software, [National Cancer Institute Joinpoint Regression Program](http://surveillance.cancer.gov/joinpoint/), which only runs on selected platforms. With that said, Dr. Vito Muggeo helped us with an R solution through his [segmented](https://cran.r-project.org/web/packages/segmented/index.html) package.
+
+<center>
+
+``` {r echo=FALSE, results='asis'}
+
+ggplot(joinpoint, aes(x = year, y = mean)) +
+  geom_point(aes(size = 2 / (SE*100))) +
+  theme_tufte() +
+  ggtitle("Figure 3. Variance of each datum.") +
+  theme(plot.title = element_text(size=9, face="bold"))
+```
+
+</center>
+
+Carrying out a trend analysis required creating new weights to fit a piecewise linear regression. Figure 3 shows the relationship between variance at each datum and weighting; smaller circles are equivalent to a larger variance and therefore lower weight.
+
+Our analysis returned similar results to the Joinpoint Regression Program in that the estimated change point was the 1999 year - the start of a decreasing trend in smoking prevalence or an annual percent change (APC) of -3.92 percent.
+
+#### Describing the trends
+
+After identifying the change point for smoking prevalence, we created two regression models. The first model covered years up to the change point (i.e., 1991 to 1999). The second model included the years from the change point forward (i.e., 1999 to 2011). According to the output from the regression models, there was no change during the 1991-1999 time period; the linear time trend variable was not significant. However, the 1999-2011 time period saw a linear decrease, which supports the APC estimate in the previous step.
+
+
+``` {r, include=FALSE}
+c5l <- contr.poly(5)[, 1]
+c7l <- contr.poly(7)[, 1]
+
+des_ns <- update(des_ns, t5l = c5l[match(year, seq(1991, 1999, 2))])
+des_ns <- update(des_ns, t7l = c7l[match(year, seq(1999, 2011, 2))])
+
+# glm - courtesy of Dr. Thomas Lumley
+t4 <- svyglm(I(smoking == 1) ~ sex + raceeth + grade + t5l,
+             design = subset(des_ns, smoking %in% 1:2 & year <= 1999), 
+             family = quasibinomial)
+
+t5 <- svyglm(I(smoking == 1) ~ sex + raceeth + grade + t7l,
+             design = subset( des_ns , smoking %in% 1:2 & year >= 1999), 
+             family = quasibinomial)
+```
+
+<center>
+
+``` {r echo=FALSE, results='asis'}
+htmlreg(list(t4, t5), doctype = F, html.tag = F, inline.css = T, 
+    head.tag = F, body.tag = F, center = F, single.row = T, caption = "Table 2. Describing the linear trends pre-post change point.")
+```
+ 
+ </center>
+ 
+## Conclusion
+
+The analysis may complement qualitative evaluation on prevalence changes observed from surveillance data by providing quantitative evidence, such as when a change point occurred. A limitation to the analysis, however, is that the analysis is unable to explain why or how changes in trends occur. 
+
