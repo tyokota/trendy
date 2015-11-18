@@ -410,24 +410,36 @@ os$psi
 # in this cdc replication example, a more parsimonious model is supported by data:
 # as the left slope (data points prior to 1999) is almost zero, it makes sense to cordon it off.
 
-o0 <- lm( log( mean ) ~ yr , weights = wgt , data = means_for_joinpoint) # no covariate
+# re-run the logistic regression without a covariate
+o0 <- lm( log( mean ) ~ yr , weights = wgt , data = means_for_joinpoint) 
 os0 <- segmented( o0 , ~yr )
 fit100 <- predict( os0 , newdata = data.frame( year = year100 ) )
 lines( year100 , exp( fit100 ) , col = 3 , lwd = 2)
-slope(os0, APC=TRUE) #a somewhat narrower confidence interval..
 
-
+# notice how without accounting for year, 
+# the confidence intervals have decreased a bit.
+slope( os0 , APC = TRUE )
 
 # # end of joinpoint analysis # #
 
+# # question to answer with the joinpoint analysis:
+# # what year(s) should i set my breakpoints in a trend analysis of survey data?
+
+# # answer, thanks to the joinpoint analysis:
+# # at 1999.
+
+# # so 1991, 1993, 1995, 1997, 1999 is five year-points before (and including 1999)
 # calculate a five-timepoint linear contrast vector
 c5l <- contr.poly( 5 )[ , 1 ]
 
+
+# # and 1999, 2001, 2003, 2005, 2007, 2009, and 2011 is seven year-points after (and including 1999)
 # calculate a seven-timepoint linear contrast vector
 c7l <- contr.poly( 7 )[ , 1 ]
 
 # tack the five-timepoint linear contrast vectors onto the current survey design object
 des_ns <- update( des_ns , t5l = c5l[ match( year , seq( 1991 , 1999 , 2 ) ) ] )
+
 
 # tack the seven-timepoint linear contrast vectors onto the current survey design object
 des_ns <- update( des_ns , t7l = c7l[ match( year , seq( 1999 , 2011 , 2 ) ) ] )
