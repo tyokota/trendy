@@ -395,6 +395,10 @@ fit100 <- predict( os , newdata = data.frame( yr = year100 ) )
 
 lines( year100 , exp( fit100 ) , col = 2 , lwd = 2 )
 
+plot(os, add=T, transf=exp, col=2, lwd=2) #note argument 'transf'
+
+
+
 # in the next version of the segmented package, plot.segmented() will include an option to transform the fitted values before plotting.
 
 # the estimated breakpoint along its (approximate) standard error is
@@ -411,7 +415,7 @@ os$psi
 # as the left slope (data points prior to 1999) is almost zero, it makes sense to cordon it off.
 
 # re-run the logistic regression without a covariate
-o0 <- lm( log( mean ) ~ yr , weights = wgt , data = means_for_joinpoint) 
+o0 <- lm( log( mean ) ~ 1 , weights = wgt , data = means_for_joinpoint) 
 os0 <- segmented( o0 , ~yr )
 fit100 <- predict( os0 , newdata = data.frame( year = year100 ) )
 lines( year100 , exp( fit100 ) , col = 3 , lwd = 2)
