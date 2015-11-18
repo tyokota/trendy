@@ -42,12 +42,15 @@
 
 
 # remove the # in order to run this install.packages line only once
-# install.packages( c( "downloader" , "plyr" , "survey" ) )
+# install.packages( c( "downloader" , "plyr" , "survey" , "segmented" ) )
 
+# Muggeo V. (2008) Segmented: an R package to fit regression models with broken-line relationships. R News, 8, 1: 20-25.
+library(segmented)	# determine segmented relationships in regression models
 
 library(downloader)	# downloads and then runs the source() function on scripts from github
 library(plyr) 		# contains the rbind.fill() function, which stacks two data frames even if they don't contain the same columns.  the rbind() function does not do this
 library(survey) 	# load survey package (analyzes complex design surveys)
+
 
 
 # set R to produce conservative standard errors instead of crashing
@@ -329,35 +332,93 @@ means_for_joinpoint$year <- as.numeric( rownames( means_for_joinpoint ) )
 # must be sorted, just in case it's not already
 means_for_joinpoint <- means_for_joinpoint[ order( means_for_joinpoint$year ) , ]
 
-# output this data.frame object into your current working directory
-# in a format readable by the national cancer institute's joinpoint software
-# write.table( means_for_joinpoint , "means for joinpoint.txt" , sep = "\t" , row.names = FALSE , col.names = TRUE ) 
 
-# # # # external software to calculate which years to use as joinpoints # # # #
+# # joinpoint analysis # #
+# # vito wrote this part # #
 
-# # the national cancer institute's joinpoint software
-# # ( a free download from https://surveillance.cancer.gov/joinpoint/download )
-# # will import the text file and (if you follow the settings used in `joinpoint settings.png`)
-# # https://raw.githubusercontent.com/tyokota/trendy/master/joinpoint%20settings.png
+# look at what you've got
+means_for_joinpoint
 
-# # except: see the red square in that picture?  look for the red square.
-# # the maximum number of joinpoints should be determined based on the
-# # linear / quadratic / cubic / etc. experiments conducted above.
-# # in this example, quadratic was the final significant term,
-# # so we should use maximum joinpoints = 1; however, if in your data
-# # cubic is the final significant term, use maximum joinpoints = 2.
+# rename columns so they do not conflict with variables in memory
+names( means_for_joinpoint ) <- c( 'mean' , 'se' , 'yr' )
+# the above line is only because the ?segmented function does not work if an object of the same name is also in memory.
 
-# # using a maximum joinpoint = 1 in this example, the software
-# # determines that a joinpoint should be constructed at the year 1999.
-# # this tells you that you ought to re-do the previous svyglm() analyses twice.
-# # once using all years prior to and including 1999
-# # then again starting at 1999 and ending at the final year of data
-# # note that re-running this analysis two more times
-# # requires re-integrating the year-contrast values for a five-timepoint span (1991, 1993, 1995, 1997, 1999)
-# # and, separately, a seven-timepoint span (1999, 2001, 2003, 2005, 2007, 2009, 2011)
+# plot what you've got
+with(means_for_joinpoint, plot(yr,mean)) #with() specifies the means_for_joinpointataframe where the variables 'y' and 'year' are stored
 
-# # # # end of external software joinpoint instructions # # # #
+# since we have information about variance of each datum, display circles proportional to '1/sqrt(variance)'
+# using the 'cex' argument.  the smaller the circle, the larger the variance (and the lower the weight)
 
+with( means_for_joinpoint , plot( yr , mean , cex = 2 / (se * 100 ) ) ) 
+# 2 / ( se * 100 ) is only relevant here because it averages near 1 so the plot looks nice
+
+# since a joinpoint analysis requires modeling the log(mean),
+# compute the corresponding variance var( log( mean ) ) = var( mean ) / mean^2
+# thus the new weights will be ( 1 / var( log( mean ) ) )
+# create that weight variable
+means_for_joinpoint$wgt <- with( means_for_joinpoint, ( mean / se ) ^ 2 ) 
+
+# fit a piecewise linear regression
+# estimate the 'starting' linear model with the usual "lm" function using the log values and the weights
+
+o <- lm( log( mean ) ~ yr , weights = wgt , data = means_for_joinpoint )
+
+# add a segmented variable (`yr` in this example) with 1 breakpoint
+os <- segmented( o , ~yr )
+
+# `os` is now a `segmented` object, which means it includes information on the fitted model,
+# such as parameter estimates, standard errors, residuals.  check it out!
+summary( os )
+
+# did you see the `Estimated Break-Point(s)` in that result?
+# figuring out the breakpoint year was the purpose of this joinpoint analysis.
+( your_breakpoint <- round( as.vector( os$psi[, "Est." ] ) ) )
+# so.  that's a joinpoint.  that's where the two line segments join.  okay?
+
+
+# # methods notes about joinpoints with `segmented` # #
+
+# obtain the annual percent change (APC=) estimates for each time point
+slope( os , APC = TRUE )
+
+# the returned CIs for the APC may be different from the ones returned by joinpoint; for further details, check out
+# Muggeo V. (2010) A Comment on `Estimating average annual per cent change in trend analysis' by Clegg et al.,
+# Statistics in Medicine; 28, 3670-3682. Statistics in Medicine, 29, 1958-1960.
+
+# in general, `plot.segmented()` can be used to plot the fitted lines along with observations, but here
+# we need to reconvert the fitted values (which are on the log scale) on the original scale.
+# use a "fine" grid (e.g. 100 values, lots of pixels) to better display the fitted lines
+
+year100 <- seq( 1991 , 2011 , length.out = 100 )
+
+fit100 <- predict( os , newdata = data.frame( yr = year100 ) )
+
+lines( year100 , exp( fit100 ) , col = 2 , lwd = 2 )
+
+# in the next version of the segmented package, plot.segmented() will include an option to transform the fitted values before plotting.
+
+# the estimated breakpoint along its (approximate) standard error is
+os$psi
+
+# note that the above number is not an integer! the `segmented` package uses an iterative procedure (described in the article below)
+# and therefore even between-year solutions are returned. the joinpoint software implements two estimating algorithms: 
+# the grid-search and the Hudson algorithm, the latter returning also non-integer solutions like segmented.
+
+# Muggeo V. (2003) Estimating regression models with unknown break-points. Statistics in Medicine, 22: 3055-3071.
+
+
+# in this cdc replication example, a more parsimonious model is supported by data:
+# as the left slope (data points prior to 1999) is almost zero, it makes sense to cordon it off.
+
+o0 <- lm( log( mean ) ~ yr , weights = wgt , data = means_for_joinpoint) # no covariate
+os0 <- segmented( o0 , ~yr )
+fit100 <- predict( os0 , newdata = data.frame( year = year100 ) )
+lines( year100 , exp( fit100 ) , col = 3 , lwd = 2)
+slope(os0, APC=TRUE) #a somewhat narrower confidence interval..
+
+
+
+# # end of joinpoint analysis # #
 
 # calculate a five-timepoint linear contrast vector
 c5l <- contr.poly( 5 )[ , 1 ]
