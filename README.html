@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-<title>The purpose of this analysis is to make statistically valid statements such as, <em>&ldquo;there was a significant linear decrease in the prevalence of ever smoking a cigarette across the period 1999-2011&rdquo;</em> with complex sample survey data.</title>
+<title>The purpose of this analysis is to make statistically valid statements such as, <em>&ldquo;there was a significant linear decrease in the prevalence of high school aged americans who have ever smoked a cigarette across the period 1999-2011&rdquo;</em> with complex sample survey data.</title>
 
 <script type="text/javascript">
 window.onload = function() {
@@ -207,7 +207,7 @@ hr {
 
 <p>&nbsp;  </p>
 
-<h4>The purpose of this analysis is to make statistically valid statements such as, <em>&ldquo;there was a significant linear decrease in the prevalence of ever smoking a cigarette across the period 1999-2011&rdquo;</em> with complex sample survey data.</h4>
+<h4>The purpose of this analysis is to make statistically valid statements such as, <em>&ldquo;there was a significant linear decrease in the prevalence of high school aged americans who have ever smoked a cigarette across the period 1999-2011&rdquo;</em> with complex sample survey data.</h4>
 
 <p>This step-by-step walkthrough exactly reproduces the statistics presented in the <a href="http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_conducting_trend_analyses.pdf">Center for Disease Control &amp; Prevention&#39;s (CDC) linear trend analysis</a>, using free and open source methods rather than proprietary or restricted software.</p>
 
@@ -257,8 +257,9 @@ options( survey.lonely.psu = &quot;adjust&quot; )
 
 # load dr. thomas lumley&#39;s `svypremeans` function, which replicates SUDAAN&#39;s PREDMARG command
 source_url( &quot;https://gist.githubusercontent.com/tslumley/2e74cd0ac12a671d2724/raw/0f5feeb68118920532f5b7d67926ec5621d48975/svypredmeans.R&quot; , prompt = FALSE , quiet = TRUE )
-# for more detail about this method, see https://gist.github.com/tslumley/2e74cd0ac12a671d2724
 </code></pre>
+
+<p>For more detail about this method, see <a href="https://gist.github.com/tslumley/2e74cd0ac12a671d2724">https://gist.github.com/tslumley/2e74cd0ac12a671d2724</a>.</p>
 
 <hr/>
 
@@ -793,18 +794,18 @@ summary( os )
 ## 
 ## Estimated Break-Point(s):
 ##      Est.   St.Err 
-## 1998.707    0.386 
+## 1998.705    0.386 
 ## 
 ## Meaningful coefficients of the linear terms:
 ##              Estimate Std. Error t value Pr(&gt;|t|)
-## (Intercept) -4.827288   4.733316  -1.020    0.342
-## yr           0.002241   0.002374   0.944    0.377
-## U1.yr       -0.042190   0.002902 -14.538       NA
+## (Intercept) -4.837164   4.733779  -1.022    0.341
+## yr           0.002246   0.002374   0.946    0.376
+## U1.yr       -0.042192   0.002902 -14.537       NA
 ## 
-## Residual standard error: 0.7546 on 7 degrees of freedom
+## Residual standard error: 0.7547 on 7 degrees of freedom
 ## Multiple R-Squared: 0.9936,  Adjusted R-squared: 0.9908 
 ## 
-## Convergence attained in 2 iterations with relative change -3.256262e-16
+## Convergence attained in 2 iterations with relative change 5.698459e-16
 </code></pre>
 
 <p>See the <code>Estimated Break-Point(s)</code> in that result?  that&#39;s the critical number from this joinpoint analysis.</p>
@@ -826,8 +827,8 @@ slope( os , APC = TRUE )
 
 <pre class="r-output"><code class="r-output">## $yr
 ##           Est. CI(95%).l CI(95%).u
-## slope1  0.2244   -0.3367    0.7885
-## slope2 -3.9160   -4.2950   -3.5360
+## slope1  0.2249   -0.3362    0.7891
+## slope2 -3.9160   -4.2940   -3.5360
 </code></pre>
 
 <p>The returned CIs for the APC may be different from the ones returned by <a href="surveillance.cancer.gov/joinpoint/">NCI&#39;s Joinpoint Software</a>; for further details, check out <a href="http://onlinelibrary.wiley.com/doi/10.1002/sim.3850/abstract">Muggeo V. (2010) A Comment on Estimating average annual per cent change in trend analysis&#39; by Clegg et al., Statistics in Medicine; 28, 3670-3682. Statistics in Medicine, 29, 1958-1960.</a></p>

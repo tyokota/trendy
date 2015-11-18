@@ -10,7 +10,7 @@ guest post by my friend [thomas yakota](mailto:thomasyokota@gmail.com), an oahu-
 
 -----
 &nbsp;  
-#### The purpose of this analysis is to make statistically valid statements such as, *"there was a significant linear decrease in the prevalence of ever smoking a cigarette across the period 1999-2011"* with complex sample survey data.
+#### The purpose of this analysis is to make statistically valid statements such as, *"there was a significant linear decrease in the prevalence of high school aged americans who have ever smoked a cigarette across the period 1999-2011"* with complex sample survey data.
 
 This step-by-step walkthrough exactly reproduces the statistics presented in the [Center for Disease Control & Prevention's (CDC) linear trend analysis](http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_conducting_trend_analyses.pdf), using free and open source methods rather than proprietary or restricted software.
 
@@ -61,8 +61,12 @@ options( survey.lonely.psu = "adjust" )
 
 # load dr. thomas lumley's `svypremeans` function, which replicates SUDAAN's PREDMARG command
 source_url( "https://gist.githubusercontent.com/tslumley/2e74cd0ac12a671d2724/raw/0f5feeb68118920532f5b7d67926ec5621d48975/svypredmeans.R" , prompt = FALSE , quiet = TRUE )
-# for more detail about this method, see https://gist.github.com/tslumley/2e74cd0ac12a671d2724
 ```
+
+For more detail about this method, see https://gist.github.com/tslumley/2e74cd0ac12a671d2724.
+
+
+
 -----
 &nbsp;  
 ### (3) Harmonize and Stack Multiple Years of Survey Data
@@ -614,18 +618,18 @@ summary( os )
 ## 
 ## Estimated Break-Point(s):
 ##      Est.   St.Err 
-## 1998.707    0.386 
+## 1998.705    0.386 
 ## 
 ## Meaningful coefficients of the linear terms:
 ##              Estimate Std. Error t value Pr(>|t|)
-## (Intercept) -4.827288   4.733316  -1.020    0.342
-## yr           0.002241   0.002374   0.944    0.377
-## U1.yr       -0.042190   0.002902 -14.538       NA
+## (Intercept) -4.837164   4.733779  -1.022    0.341
+## yr           0.002246   0.002374   0.946    0.376
+## U1.yr       -0.042192   0.002902 -14.537       NA
 ## 
-## Residual standard error: 0.7546 on 7 degrees of freedom
+## Residual standard error: 0.7547 on 7 degrees of freedom
 ## Multiple R-Squared: 0.9936,  Adjusted R-squared: 0.9908 
 ## 
-## Convergence attained in 2 iterations with relative change -3.256262e-16
+## Convergence attained in 2 iterations with relative change 5.698459e-16
 ```
 
 See the `Estimated Break-Point(s)` in that result?  that's the critical number from this joinpoint analysis.
@@ -652,8 +656,8 @@ slope( os , APC = TRUE )
 ```
 ## $yr
 ##           Est. CI(95%).l CI(95%).u
-## slope1  0.2244   -0.3367    0.7885
-## slope2 -3.9160   -4.2950   -3.5360
+## slope1  0.2249   -0.3362    0.7891
+## slope2 -3.9160   -4.2940   -3.5360
 ```
 
 The returned CIs for the APC may be different from the ones returned by [NCI's Joinpoint Software](surveillance.cancer.gov/joinpoint/); for further details, check out [Muggeo V. (2010) A Comment on `Estimating average annual per cent change in trend analysis' by Clegg et al., Statistics in Medicine; 28, 3670-3682. Statistics in Medicine, 29, 1958-1960.](http://onlinelibrary.wiley.com/doi/10.1002/sim.3850/abstract)
