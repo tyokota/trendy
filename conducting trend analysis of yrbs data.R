@@ -7,7 +7,9 @@
 # thomas yokota
 # thomasyokota@gmail.com
 
-# with contributions from
+# vito michele rosario muggeo
+# vito.muggeo@unipa.it 
+
 # anthony joseph damico
 # ajdamico@gmail.com
 
@@ -16,6 +18,11 @@
 
 # thanks to dr. richard lowry at the cdc for methodological assistance in
 # interpreting and reproducing that yrbss trend publication
+
+
+# # # this example displays only linearized designs (created with the ?svydesign function)
+# # # for more detail about how to reproduce this analysis with a replicate-weighted design (created with the ?svrepdesign function)
+# # # see the methods note below the `svydesign` block about how to best reproduce this analysis on a replication design
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -162,6 +169,7 @@ y$t11q <- c11q[ match( y$year , seq( 1999 , 2011 , 2 ) ) ]
 y$t11c <- c11c[ match( y$year , seq( 1999 , 2011 , 2 ) ) ]
 
 # construct a complex sample survey design object
+# stacking multiple years and accounting for `year` in the nested strata
 des <- 
 	svydesign(
 		id = ~psu , 
@@ -170,10 +178,59 @@ des <-
 		weights = ~weight , 
 		nest = TRUE
 	)
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# methods note about how to stack replication designs #
+
+# this is only relevant if you are trying to create a `des` like the object above but just have replicate weights and do not have the clustering information (psu)
+
+# it is quite straightforward to construct a replication design using a linearized design (see ?as.svrepdesign)
+# however, for privacy reasons, going in the opposite direction is much more challenging (see http://www.asdfree.com/2014/09/how-to-provide-variance-calculation-on.html)
+# therefore, you'll need to do some dataset-specific homework on how to best *stack* multiple years of a replicate-weighted design before
+# before you construct a multiple-year-stacked survey design like the object above.
+
+# these publicly-available survey data sets include both replicate weights (for a replication design) and, separately, clustering information (for a linearized design):
+# the medical expenditure panel survey, the national health and nutrition examination survey, the consumer expenditure survey
+
+# in most cases, omitting the `year` variable from the `des` construction above will make your standard errors larger (conservative)
+# -> ergo -> you can probably just rbind( repweight_year_one , repweight_year_two , ... ) so long as the survey design has not changed over the period.
+# once you have the rbound replicate weights object for every year, you could just construct one huge multi-year svrepdesign.
+# make sure you include scales, rscales, rho, and whatever else the svrepdesign() call asks for.
+# if you are worried you missed something, check attributes( your_single_year_replication_design_object )
+
+# # the above solution is likely all you need in most cases. # #
+
+# # if you need to be very conservative with your computation of trend statistical significance # #
+
+# attempt to re-construct fake clusters yourself using a regression.  search for "malicious" in
+# https://github.com/ajdamico/asdfree/blob/master/Confidentiality/how%20to%20create%20de-identified%20replicate%20weights.R
+# the purpose this, though, isn't to identify individuals in the dataset, it's to get a variable like `psu` above that gives you reasonable standard errors.
+
+# see the object `your.replicate.weights` in that script?
+# you could reconstruct a fake psu for each record in your data set with something as easy as
+# # fake_psu <- kmeans( your.replicate.weights , 20 )
+# where 20 is the (completely made up) number of clusters x strata.
+# hopefully the methodology documents (or the people who wrote them) will at least tell you how many clusters there were in the original sample,
+# even if the clusters themselves were not disclosed.
+
+# fake_psu should be a one-record-per-person vector object that can immediately be appended onto your data set.
+
+# # at the point you've made fake clusters, they will surely be worse than the real clusters (i.e. conservative standard errors)
+# # and you can construct a multiple-year survey design with
+# # des <- svydesign( id = ~ your_fake_psus , strata = ~ year , data = y , weights = ~ weight , nest = TRUE )
+
+# this approach will probably be conservative probably
+
+# end of note about how to stack replication designs. #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 	
 # immediately remove records with missing smoking status
 des_ns <- subset( des , !is.na( smoking ) )
-	
+
 
 # calculate unadjusted, un-anythinged "ever smoked" rates by year
 # note that this reproduces the unadjusted "ever smoked" statistics at the top of
@@ -275,7 +332,6 @@ means_for_joinpoint <- means_for_joinpoint[ order( means_for_joinpoint$year ) , 
 # output this data.frame object into your current working directory
 # in a format readable by the national cancer institute's joinpoint software
 # write.table( means_for_joinpoint , "means for joinpoint.txt" , sep = "\t" , row.names = FALSE , col.names = TRUE ) 
-
 
 # # # # external software to calculate which years to use as joinpoints # # # #
 
