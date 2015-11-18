@@ -63,7 +63,7 @@ options( survey.lonely.psu = "adjust" )
 
 
 # load dr. thomas lumley's `svypremeans` function, which replicates SUDAAN's PREDMARG command
-source_url( "https://raw.githubusercontent.com/tyokota/trendy/master/svypredmeans.R" , prompt = FALSE )
+source_url( "https://gist.githubusercontent.com/tslumley/2e74cd0ac12a671d2724/raw/0f5feeb68118920532f5b7d67926ec5621d48975/svypredmeans.R" , prompt = FALSE )
 # for more detail about this method, see https://gist.github.com/tslumley/2e74cd0ac12a671d2724
 
 
