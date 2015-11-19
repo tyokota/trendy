@@ -283,9 +283,15 @@ summary( linyear )
 
 The linear year-contrast variable `t11l` is hugely significant here.  Therefore, there is probably going to be some sort of trend.  A linear trend does not need joinpoints.  Not one, just zero joinpoints.  If the linear term were the only significant term (out of linear, quadratic, cubic, etc.), then we would not need to calculate a joinpoint.  In other words, we would not need to figure out where to best break our time trend into two, three, or even four segments.
 
-Since the linear trend is significant, so we should keep going.
+The linear trend is significant, so we should keep going.
 
-**The linear term `t11l` was significant, so we probably have a significant linear trend somewhere to report.  Now we need to figure out when that significant linear trend started and ended.  It might be semantically true that there was a significant linear decrease in smoking over the entire period of our data 1991-2011; however, it's inexact, unrefined to give up after only detecting a linear trend.  The purpose of the following few steps is really to *cordon off* different time points from one another.  As you'll see later, there actually was not any detectable decrease from 1991-1999.  The entirety of the decline in smoking occurred over the period from 1999-2011.  So these next (methodologically tricky) steps serve to provide you and your audience with a more precise statement of statistical significance.  It's not technically wrong to conclude that smoking declined over the period of 1991-2011, it's just verbose.**
+-----
+&nbsp;  
+
+**The linear term `t11l` was significant, so we probably have a significant linear trend somewhere to report.  Now we need to figure out when that significant linear trend started and ended.  It might be semantically true that there was a significant linear decrease in high school aged smoking over the entire period of our data 1991-2011; however, it's inexact, unrefined to give up after only detecting a linear trend.  The purpose of the following few steps is really to *cordon off* different time points from one another.  As you'll see later, there actually was not any detectable decrease from 1991-1999.  The entirety of the decline in smoking occurred over the period from 1999-2011.  So these next (methodologically tricky) steps serve to provide you and your audience with a more precise statement of statistical significance.  It's not technically wrong to conclude that smoking declined over the period of 1991-2011, it's just verbose.**
+
+-----
+&nbsp;  
 
 Calculate the "ever smoked" binomial regression, adjusted by sex, age, race-ethnicity, and both linear and quadratic year contrasts.  Notice the addition of `t11q`.
 
