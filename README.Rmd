@@ -320,7 +320,7 @@ cubyear <-
 	
 summary( cubyear )
 ```
-The cubic year-contrast term is *not* significant in this model.  Therefore, we should stop testing the shape of this line.  In other words, we can stop at a quadratic trend and *do not* need a cubic trend.  That means we can stop at a single joinpoint.  Remember: a linear trend requires zero joinpoints, a quadratic trend requires one joinpoint, a cubic trend requires two, and on and on.
+The cubic year-contrast term is *not* significant in this model.  Therefore, we should stop testing the shape of this line.  In other words, we can stop at a quadratic trend and *do not* need a cubic trend.  That means we can stop at a single joinpoint.  Remember: a linear trend requires zero joinpoints, a quadratic trend typically requires one joinpoint, a cubic trend usually requires two, and on and on.
 
 Note: if the cubic trend *were* significant, then we would increase the number of joinpoints to *two* instead of *one* but since the cubic term is not significant, we should stop with the previous regression.  If we keep getting significant trends, we ought to continue testing whether higher terms continue to be significant.  So `year^4` requires three joinpoints, `year^5` requires four joinpoints, and so on.  If these terms continued to be significant, we would need to return to step #4 and add additional `year^n` terms to the model.
 

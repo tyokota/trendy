@@ -413,7 +413,7 @@ summary( cubyear )
 ## 
 ## Number of Fisher Scoring iterations: 4
 ```
-The cubic year-contrast term is *not* significant in this model.  Therefore, we should stop testing the shape of this line.  In other words, we can stop at a quadratic trend and *do not* need a cubic trend.  That means we can stop at a single joinpoint.  Remember: a linear trend requires zero joinpoints, a quadratic trend requires one joinpoint, a cubic trend requires two, and on and on.
+The cubic year-contrast term is *not* significant in this model.  Therefore, we should stop testing the shape of this line.  In other words, we can stop at a quadratic trend and *do not* need a cubic trend.  That means we can stop at a single joinpoint.  Remember: a linear trend requires zero joinpoints, a quadratic trend typically requires one joinpoint, a cubic trend usually requires two, and on and on.
 
 Note: if the cubic trend *were* significant, then we would increase the number of joinpoints to *two* instead of *one* but since the cubic term is not significant, we should stop with the previous regression.  If we keep getting significant trends, we ought to continue testing whether higher terms continue to be significant.  So `year^4` requires three joinpoints, `year^5` requires four joinpoints, and so on.  If these terms continued to be significant, we would need to return to step #4 and add additional `year^n` terms to the model.
 
@@ -642,18 +642,18 @@ summary( os )
 ## 
 ## Estimated Break-Point(s):
 ##      Est.   St.Err 
-## 1998.666    0.387 
+## 1998.702    0.386 
 ## 
 ## Meaningful coefficients of the linear terms:
 ##              Estimate Std. Error t value Pr(>|t|)
-## (Intercept) -5.164795   4.752765  -1.087    0.313
-## yr           0.002410   0.002384   1.011    0.346
-## U1.yr       -0.042268   0.002914 -14.505       NA
+## (Intercept) -4.863149   4.735026  -1.027    0.339
+## yr           0.002259   0.002375   0.951    0.373
+## U1.yr       -0.042198   0.002903 -14.535       NA
 ## 
-## Residual standard error: 0.7577 on 7 degrees of freedom
-## Multiple R-Squared: 0.9935,  Adjusted R-squared: 0.9908 
+## Residual standard error: 0.7549 on 7 degrees of freedom
+## Multiple R-Squared: 0.9936,  Adjusted R-squared: 0.9908 
 ## 
-## Convergence attained in 2 iterations with relative change -1.465318e-15
+## Convergence attained in 2 iterations with relative change 2.035164e-15
 ```
 
 See the `Estimated Break-Point(s)` in that result?  That's the critical number from this joinpoint analysis.
@@ -680,8 +680,8 @@ slope( os , APC = TRUE )
 ```
 ## $yr
 ##           Est. CI(95%).l CI(95%).u
-## slope1  0.2413   -0.3221    0.8079
-## slope2 -3.9070   -4.2880   -3.5260
+## slope1  0.2262   -0.3351    0.7905
+## slope2 -3.9150   -4.2940   -3.5350
 ```
 
 The returned CIs for the annual percent change (APC) may be different from the ones returned by [NCI's Joinpoint Software](surveillance.cancer.gov/joinpoint/); for further details, check out [Muggeo V. (2010) A Comment on `Estimating average annual per cent change in trend analysis' by Clegg et al., Statistics in Medicine; 28, 3670-3682. Statistics in Medicine, 29, 1958-1960.](http://onlinelibrary.wiley.com/doi/10.1002/sim.3850/abstract)
