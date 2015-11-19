@@ -421,7 +421,7 @@ os <- segmented( o , ~yr )
 summary( os )
 ```
 
-See the `Estimated Break-Point(s)` in that result?  that's the critical number from this joinpoint analysis.
+See the `Estimated Break-Point(s)` in that result?  That's the critical number from this joinpoint analysis.
 
 Note that the above number is not an integer! The [R `segmented` package](https://cran.r-project.org/web/packages/segmented/index.html) uses an iterative procedure (described in the article below) and therefore between-year solutions are returned.  The joinpoint software implements two estimating algorithms: the grid-search and the Hudson algorithm, the latter returning also non-integer solutions like segmented.  For more detail about this method, see [Muggeo V. (2003) Estimating regression models with unknown break-points. Statistics in Medicine, 22: 3055-3071.](http://onlinelibrary.wiley.com/doi/10.1002/sim.1545/abstract).
 

@@ -620,21 +620,21 @@ summary( os )
 ## 
 ## Estimated Break-Point(s):
 ##      Est.   St.Err 
-## 1998.703    0.386 
+## 1998.722    0.387 
 ## 
 ## Meaningful coefficients of the linear terms:
 ##              Estimate Std. Error t value Pr(>|t|)
-## (Intercept) -4.857961   4.734774  -1.026    0.339
-## yr           0.002256   0.002375   0.950    0.374
-## U1.yr       -0.042197   0.002903 -14.536       NA
+## (Intercept) -4.696722   4.727794  -0.993    0.354
+## yr           0.002176   0.002371   0.918    0.389
+## U1.yr       -0.042159   0.002899 -14.544       NA
 ## 
-## Residual standard error: 0.7549 on 7 degrees of freedom
-## Multiple R-Squared: 0.9936,  Adjusted R-squared: 0.9908 
+## Residual standard error: 0.7538 on 7 degrees of freedom
+## Multiple R-Squared: 0.9936,  Adjusted R-squared: 0.9909 
 ## 
-## Convergence attained in 2 iterations with relative change 2.442197e-15
+## Convergence attained in 2 iterations with relative change 1.953757e-15
 ```
 
-See the `Estimated Break-Point(s)` in that result?  that's the critical number from this joinpoint analysis.
+See the `Estimated Break-Point(s)` in that result?  That's the critical number from this joinpoint analysis.
 
 Note that the above number is not an integer! The [R `segmented` package](https://cran.r-project.org/web/packages/segmented/index.html) uses an iterative procedure (described in the article below) and therefore between-year solutions are returned.  The joinpoint software implements two estimating algorithms: the grid-search and the Hudson algorithm, the latter returning also non-integer solutions like segmented.  For more detail about this method, see [Muggeo V. (2003) Estimating regression models with unknown break-points. Statistics in Medicine, 22: 3055-3071.](http://onlinelibrary.wiley.com/doi/10.1002/sim.1545/abstract).
 
@@ -658,8 +658,8 @@ slope( os , APC = TRUE )
 ```
 ## $yr
 ##           Est. CI(95%).l CI(95%).u
-## slope1  0.2259   -0.3353    0.7903
-## slope2 -3.9150   -4.2940   -3.5350
+## slope1  0.2178   -0.3425    0.7813
+## slope2 -3.9190   -4.2980   -3.5400
 ```
 
 The returned CIs for the APC may be different from the ones returned by [NCI's Joinpoint Software](surveillance.cancer.gov/joinpoint/); for further details, check out [Muggeo V. (2010) A Comment on `Estimating average annual per cent change in trend analysis' by Clegg et al., Statistics in Medicine; 28, 3670-3682. Statistics in Medicine, 29, 1958-1960.](http://onlinelibrary.wiley.com/doi/10.1002/sim.3850/abstract)
