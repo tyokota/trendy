@@ -21,7 +21,7 @@ The example below displays only linearized designs (created with [the `svydesign
 -----
 &nbsp;  
 ### (1) Data Importation
-Prior to running this analysis script, the Youth Risk Behavioral Surveillance System (YRBSS) 1991-2011 single-year files must all be loaded as r data files (.rda) on your local machine.  Running the download automation script will create the appropriate files.  If you need assistance with the data-loading step, first review [the main YRBSS blog post](http://www.asdfree.com/search/label/youth%20risk%20behavior%20surveillance%20system%20%28yrbss%29).
+Prior to running this analysis script, the Youth Risk Behavioral Surveillance System (YRBSS) 1991-2011 single-year files must all be loaded as R data files (.rda) on your local machine.  Running the download automation script will create the appropriate files.  If you need assistance with the data-loading step, first review [the main YRBSS blog post](http://www.asdfree.com/search/label/youth%20risk%20behavior%20surveillance%20system%20%28yrbss%29).
 
 ```{r, echo = TRUE, include = TRUE , eval = FALSE}
 # setInternet2( FALSE )		# # only windows users need this line
@@ -62,11 +62,11 @@ options( survey.lonely.psu = "adjust" )
 # so if you want to get closer to that, use "remove"
 
 
-# load dr. thomas lumley's `svypremeans` function, which replicates SUDAAN's PREDMARG command
+# load dr. thomas lumley's `svypredmeans` function, which replicates SUDAAN's PREDMARG command
 source_url( "https://gist.githubusercontent.com/tslumley/2e74cd0ac12a671d2724/raw/0f5feeb68118920532f5b7d67926ec5621d48975/svypredmeans.R" , prompt = FALSE , quiet = TRUE )
 ```
 
-For more detail about this method, see https://gist.github.com/tslumley/2e74cd0ac12a671d2724.
+For more detail about `svypredmeans`, see https://gist.github.com/tslumley/2e74cd0ac12a671d2724.
 
 
 
@@ -74,7 +74,7 @@ For more detail about this method, see https://gist.github.com/tslumley/2e74cd0a
 &nbsp;  
 ### (3) Harmonize and Stack Multiple Years of Survey Data
 
-This step is clearly dataset-specific.  In order for your trend analysis to work, you'll need to figure out how to align the variables from multiple years of data into a single, stacked `data.frame` object.
+This step is clearly dataset-specific.  In order for your trend analysis to work, you'll need to figure out how to align the variables from multiple years of data into a trendable, stacked `data.frame` object.
 
 ```{r,echo=TRUE,include=TRUE,error=FALSE}
 
@@ -160,13 +160,11 @@ for ( i in c( 'smoking' , 'raceeth' , 'grade' ) ) y[ , i ] <- relevel( factor( y
 ```
 
 
-If you'd like more detail about stacking multiple years of complex survey data, review [the CDC's manual](http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_combining_data.pdf) on the topic.
-
 -----
 &nbsp;  
 ### (4) Construct a Multi-Year Stacked Complex Survey Design Object
 
-Before constructing a multi-year stacked design object, check out `?contr.poly` - this function implements polynomials used in complex survey data.  For more detail on this subject, see [page 216 of Applied Multiple Regression/Correlation Analysis for the Behavioral Sciences](https://www.google.com/search?q=The+polynomials+we+have+used+as+predictors+to+this+point+are+natural+polynomials%2C+generated+from+the+linear+predictor+by+centering+and+the+powering+the+linear+predictor.&ie=utf-8&oe=utf-8) By Jacob Cohen, Patricia Cohen, Stephen G. West, Leona S. Aiken *"The polynomials we have used as predictors to this point are natural polynomials, generated from the linear predictor by centering and the powering the linear predictor."*
+Before constructing a multi-year stacked design object, check out `?contr.poly` - this function implements polynomials used in our trend analysis during step #6.  For more detail on this subject, see [page 216 of Applied Multiple Regression/Correlation Analysis for the Behavioral Sciences](https://www.google.com/search?q=The+polynomials+we+have+used+as+predictors+to+this+point+are+natural+polynomials%2C+generated+from+the+linear+predictor+by+centering+and+the+powering+the+linear+predictor.&ie=utf-8&oe=utf-8) By Jacob Cohen, Patricia Cohen, Stephen G. West, Leona S. Aiken *"The polynomials we have used as predictors to this point are natural polynomials, generated from the linear predictor by centering and the powering the linear predictor."*
 
 ```{r,echo=TRUE,include=TRUE,error=FALSE}
 # extract a linear contrast vector of length eleven,
@@ -205,21 +203,21 @@ des <-
 ```
 
 
-Now we've got a multi-year stack of complex survey designs with linear, quadratic, and cubic contrast values appended.  Hopefully we won't need anything beyond cubic, but let's find out.
+Now we've got a multi-year stack of complex survey designs with linear, quadratic, and cubic contrast values appended.  If you'd like more detail about stacking multiple years of complex survey data, review [the CDC's manual](http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_combining_data.pdf) on the topic.  Hopefully we won't need anything beyond cubic, but let's find out.
 
 -----
 &nbsp;  
-**Methods note** about how to stack replication designs: This is only relevant if you are trying to create a `des` like the object above but just have replicate weights and do not have the clustering information (psu).  It is quite straightforward to construct a replication design using a linearized design (see `?as.svrepdesign`).  However, [for privacy reasons, going in the opposite direction is much more challenging](http://www.asdfree.com/2014/09/how-to-provide-variance-calculation-on.html).  Therefore, you'll need to do some dataset-specific homework on how to best *stack* multiple years of a replicate-weighted design you construct a multiple-year-stacked survey design like the object above.
+**Methods note** about how to stack replication designs: This is only relevant if you are trying to create a `des` like the object above but just have replicate weights and do not have the clustering information (psu).  It is straightforward to construct a replication design *from* a linearized design (see [`as.svrepdesign`](http://r-survey.r-forge.r-project.org/survey/html/as.svrepdesign.html)).  However, [for privacy reasons, going in the opposite direction is much more challenging](http://www.asdfree.com/2014/09/how-to-provide-variance-calculation-on.html).  Therefore, you'll need to do some dataset-specific homework on how to best *stack* multiple years of a replicate-weighted design you construct a multiple-year-stacked survey design like the object above.
 
-These publicly-available survey data sets include both replicate weights and, separately, clustering information:
+If you'd like to experiment with how the two approaches differ (theoretically, very little), these publicly-available survey data sets include both replicate weights and, separately, clustering information:
 
 [Medical Expenditure Panel Survey](http://www.asdfree.com/search/label/medical%20expenditure%20panel%20survey%20%28meps%29)  
 [National Health and Nutrition Examination Survey](http://www.asdfree.com/search/label/national%20health%20and%20nutrition%20examination%20survey%20%28nhanes%29)  
 [Consumer Expenditure Survey](http://www.asdfree.com/search/label/consumer%20expenditure%20survey%20%28ce%29)  
 
-In most cases, omitting the `year` variable from the `des` construction above will make your standard errors larger (conservative) -> ergo -> you can probably just `rbind( repweight_year_one , repweight_year_two , ... )` so long as the survey design has not changed over the period.  Once you have the rbound replicate weights object for every year, you could just construct one huge multi-year `svrepdesign` object. Make sure you include `scale`, `rscales`, `rho`, and whatever else the `svrepdesign()` call asks for.  If you are worried you missed something, check `attributes( your_single_year_replication_design_object )`.  This solution is likely all you need in most cases.
+In most cases, omitting the `year` variable from the `strata = ~interaction( stratum , year )` construction of `des` above will make your standard errors larger (conservative) -> ergo -> you can probably just `rbind( file_with_repweights_year_one , file_with_repweights_year_two , ... )` so long as the survey design has not changed in structure over the time period that you are analyzing.  Once you have the rbound replicate weights object for every year, you could just construct one huge multi-year `svrepdesign` object. Make sure you include `scale`, `rscales`, `rho`, and whatever else the `svrepdesign()` call asks for.  If you are worried you missed something, check `attributes( your_single_year_replication_design_object )`.  This solution is likely to be a decent approach in most cases.
 
-If you need to be very conservative with your computation of trend statistical significance: attempt to re-construct fake clusters for yourself using a regression.  Search for "malicious" in [this confidentiality explanation document](https://github.com/ajdamico/asdfree/blob/master/Confidentiality/how%20to%20create%20de-identified%20replicate%20weights.R).  The purpose here, though, isn't to identify individual respondents in the dataset, it's to get a variable like `psu` above that gives you reasonable standard errors.  Look for the object `your.replicate.weights` in that script.  You could reconstruct a fake psu for each record in your data set with something as easy as..
+If you need to be very conservative with your computation of trend statistical significance, you might attempt to re-construct fake clusters for yourself using a regression.  Search for "malicious" in [this confidentiality explanation document](https://github.com/ajdamico/asdfree/blob/master/Confidentiality/how%20to%20create%20de-identified%20replicate%20weights.R).  The purpose here, though, isn't to identify individual respondents in the dataset, it's to get a variable like `psu` above that gives you reasonable standard errors.  Look for the object `your.replicate.weights` in that script.  You could reconstruct a fake psu for each record in your data set with something as easy as..
 
 ```{r,echo=TRUE,include=TRUE,eval=FALSE}
 # fake_psu should be a one-record-per-person vector object
@@ -283,11 +281,13 @@ linyear <-
 summary( linyear )
 ```
 
-The linear year-contrast variable is hugely significant here.  Therefore, there is probably going to be some sort of trend.  A linear trend does not need joinpoints.  Not one, just zero joinpoints.  If the linear term were the only significant term (out of linear, quadratic, cubic..), then we would not need to calculate a joinpoint.  In other words, we would not need to figure out where to best break our time trend into two, three, or even four segments.
+The linear year-contrast variable `t11l` is hugely significant here.  Therefore, there is probably going to be some sort of trend.  A linear trend does not need joinpoints.  Not one, just zero joinpoints.  If the linear term were the only significant term (out of linear, quadratic, cubic, etc.), then we would not need to calculate a joinpoint.  In other words, we would not need to figure out where to best break our time trend into two, three, or even four segments.
 
 Since the linear trend is significant, so we should keep going.
 
-Calculate the "ever smoked" binomial regression, adjusted by sex, age, race-ethnicity, and both linear and quadratic year contrasts.
+**The linear term `t11l` was significant, so we probably have a significant linear trend somewhere to report.  Now we need to figure out when that significant linear trend started and ended.  It might be semantically true that there was a significant linear decrease in smoking over the entire period of our data 1991-2011; however, it's inexact, unrefined to give up after only detecting a linear trend.  The purpose of the following few steps is really to *cordon off* different time points from one another.  As you'll see later, there actually was not any detectable decrease from 1991-1999.  The entirety of the decline in smoking occurred over the period from 1999-2011.  So these next (methodologically tricky) steps serve to provide you and your audience with a more precise statement of statistical significance.  It's not technically wrong to conclude that smoking declined over the period of 1991-2011, it's just verbose.**
+
+Calculate the "ever smoked" binomial regression, adjusted by sex, age, race-ethnicity, and both linear and quadratic year contrasts.  Notice the addition of `t11q`.
 
 ``` {r,echo=TRUE,include=TRUE,error=FALSE}
 quadyear <-
@@ -299,11 +299,11 @@ quadyear <-
 
 summary( quadyear )
 ```
-The linear year-contrast variable is hugely significant here but the quadratic year-contrast variable is also significant.  Therefore, we must use joinpoint software for this analysis.  A significant quadratic trend needs one joinpoint.
+The linear year-contrast variable is hugely significant here but the quadratic year-contrast variable is also significant.  Therefore, we should use joinpoint software for this analysis.  A significant quadratic trend needs one joinpoint.
 
 Since both linear and quadratic terms are significant, we should move ahead and test whether the cubic term is also significant.
 
-Calculate the "ever smoked" binomial regression, adjusted by sex, age, race-ethnicity, and linear, quadratic, and cubic year contrasts.
+Calculate the "ever smoked" binomial regression, adjusted by sex, age, race-ethnicity, and linear, quadratic, and cubic year contrasts.  Notice the addition of `t11c`.
 ``` {r,echo=TRUE,include=TRUE,error=FALSE}
 cubyear <-
 	svyglm(
@@ -361,9 +361,7 @@ means_for_joinpoint <- means_for_joinpoint[ order( means_for_joinpoint$year ) , 
 names( means_for_joinpoint ) <- c( 'mean' , 'se' , 'yr' )
 # the above line is only because the ?segmented function (used below)
 # does not work if an object of the same name is also in memory.
-```
 
-``` {r echo=FALSE, results='asis'}
 another_plot <- means_for_joinpoint
 another_plot$ci_l.mean <- another_plot$mean - (1.96 * another_plot$se)
 another_plot$ci_u.mean <- another_plot$mean + (1.96 * another_plot$se)
@@ -382,19 +380,15 @@ ggplot(another_plot, aes(x = yr, y = mean)) +
 &nbsp;  
 ### (8) Identify the Breakpoint/Changepoint
 
-The original CDC analysis recommended some [external software from the National Cancer Institute](http://surveillance.cancer.gov/joinpoint/), which only runs on selected platforms. Dr. Vito Muggeo wrote this within R solution using his [segmented](https://cran.r-project.org/web/packages/segmented/index.html) package.  Let's take a look at how confident we are in the value at each adjusted timepoint.  Carrying out a trend analysis requires creating new weights to fit a piecewise linear regression. Figure 3 shows the relationship between variance at each datum and weighting; larger circles are equivalent to a smaller variance and therefore higher weight.
+The original CDC analysis recommended some [external software from the National Cancer Institute](http://surveillance.cancer.gov/joinpoint/), which only runs on selected platforms. Dr. Vito Muggeo wrote this within-R solution using his [segmented](https://cran.r-project.org/web/packages/segmented/index.html) package available on CRAN.  Let's take a look at how confident we are in the value at each adjusted timepoint.  Carrying out a trend analysis requires creating new weights to fit a piecewise linear regression. Figure 3 shows the relationship between variance at each datum and weighting.  Larger circles display greater uncertainty and therefore lower weight.
 
-
-<center>
-
-``` {r echo=FALSE, results='asis'}
-ggplot(means_for_joinpoint, aes(x = yr, y = mean)) +
-  geom_point(aes(size = se )) +
-  theme_tufte() +
-  ggtitle("Figure 3. Standard Error at each timepoint\n(smaller dots indicate greater confidence in each adjusted value)") 
+``` {r,echo=TRUE,include=TRUE,error=FALSE}
+ggplot( means_for_joinpoint , aes( x = yr , y = mean ) ) +
+	geom_point( aes( size = se ) ) +
+	theme_tufte() +
+	ggtitle( "Figure 3. Standard Error at each timepoint\n(smaller dots indicate greater confidence in each adjusted value)"
+) 
 ```
-
-</center>
 
 
 First, create that weight variable.
@@ -410,7 +404,7 @@ Second, fit a piecewise linear regression.
 o <- lm( log( mean ) ~ yr , weights = wgt , data = means_for_joinpoint )
 ``` 
 
-Now that the regression has been structured correctly, estimate the year that our complex survey trend should be broken.
+Now that the regression has been structured correctly, estimate the year that our complex survey trend should be broken into two segments (the changepoint/breakpoint/joinpoint).
 
 ``` {r,echo=TRUE,include=TRUE,error=FALSE}
 # add a segmented variable (`yr` in this example) with 1 breakpoint
@@ -423,7 +417,7 @@ summary( os )
 
 See the `Estimated Break-Point(s)` in that result?  That's the critical number from this joinpoint analysis.
 
-Note that the above number is not an integer! The [R `segmented` package](https://cran.r-project.org/web/packages/segmented/index.html) uses an iterative procedure (described in the article below) and therefore between-year solutions are returned.  The joinpoint software implements two estimating algorithms: the grid-search and the Hudson algorithm, the latter returning also non-integer solutions like segmented.  For more detail about this method, see [Muggeo V. (2003) Estimating regression models with unknown break-points. Statistics in Medicine, 22: 3055-3071.](http://onlinelibrary.wiley.com/doi/10.1002/sim.1545/abstract).
+Note that the above number is not an integer! The [R `segmented` package](https://cran.r-project.org/web/packages/segmented/index.html) uses an iterative procedure (described in the article below) and therefore between-year solutions are returned.  The joinpoint software implements two estimating algorithms: the grid-search and the Hudson algorithm.  For more detail about these methods, see [Muggeo V. (2003) Estimating regression models with unknown break-points. Statistics in Medicine, 22: 3055-3071.](http://onlinelibrary.wiley.com/doi/10.1002/sim.1545/abstract).
 
 ``` {r,echo=TRUE,include=TRUE,error=FALSE}
 # figuring out the breakpoint year was the purpose of this joinpoint analysis.
@@ -434,15 +428,15 @@ Note that the above number is not an integer! The [R `segmented` package](https:
 slope( os , APC = TRUE )
 ```
 
-The returned CIs for the APC may be different from the ones returned by [NCI's Joinpoint Software](surveillance.cancer.gov/joinpoint/); for further details, check out [Muggeo V. (2010) A Comment on `Estimating average annual per cent change in trend analysis' by Clegg et al., Statistics in Medicine; 28, 3670-3682. Statistics in Medicine, 29, 1958-1960.](http://onlinelibrary.wiley.com/doi/10.1002/sim.3850/abstract)
+The returned CIs for the annual percent change (APC) may be different from the ones returned by [NCI's Joinpoint Software](surveillance.cancer.gov/joinpoint/); for further details, check out [Muggeo V. (2010) A Comment on `Estimating average annual per cent change in trend analysis' by Clegg et al., Statistics in Medicine; 28, 3670-3682. Statistics in Medicine, 29, 1958-1960.](http://onlinelibrary.wiley.com/doi/10.1002/sim.3850/abstract)
 
-This analysis returned similar results to the NCI's Joinpoint Regression Program by estimating a change point at `year=1999` - and, more precisely, that the start of that decreasing trend in smoking prevalence happened at an annual percent change (APC) of -3.92 percent.  That is, `slope2` from the output above.
+This analysis returned similar results to the NCI's Joinpoint Regression Program by estimating a changepoint at `year=1999` - and, more precisely, that the start of that decreasing trend in smoking prevalence happened at an APC of -3.92 percent.  That is, `slope2` from the output above.
 
 -----
 &nbsp;  
 ### (9) Make statistically defensible statements about linear trends with complex survey data
 
-After identifying the change point for smoking prevalence, we can create two regression models.  The first model covers the years leading up to (and including) the change point (i.e., 1991 to 1999).  The second model includes the years from the change point forward (i.e., 1999 to 2011).  So start with 1991, 1993, 1995, 1997, 1999, the five year-points before (and including 1999).
+After identifying the change point for smoking prevalence, we can create two regression models (one for each time segment).  (If we had two joinpoints, we would need three regression models.)  The first model covers the years leading up to (and including) the changepoint (i.e., 1991 to 1999).  The second model includes the years from the changepoint forward (i.e., 1999 to 2011).  So start with 1991, 1993, 1995, 1997, 1999, the five year-points before (and including 1999).
 
 ``` {r,echo=TRUE,include=TRUE,error=FALSE}
 # calculate a five-timepoint linear contrast vector
