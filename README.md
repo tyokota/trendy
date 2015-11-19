@@ -318,12 +318,12 @@ The linear year-contrast variable `t11l` is hugely significant here.  Therefore,
 The linear trend is significant, so we should keep going.
 
 -----
-&nbsp;  
 
-**The linear term `t11l` was significant, so we probably have a significant linear trend somewhere to report.  Now we need to figure out when that significant linear trend started and ended.  It might be semantically true that there was a significant linear decrease in high school aged smoking over the entire period of our data 1991-2011; however, it's inexact, unrefined to give up after only detecting a linear trend.  The purpose of the following few steps is really to *cordon off* different time points from one another.  As you'll see later, there actually was not any detectable decrease from 1991-1999.  The entirety of the decline in smoking occurred over the period from 1999-2011.  So these next (methodologically tricky) steps serve to provide you and your audience with a more precise statement of statistical significance.  It's not technically wrong to conclude that smoking declined over the period of 1991-2011, it's just verbose.**
+**The linear term `t11l` was significant, so we probably have a significant linear trend somewhere to report.  Now we need to figure out when that significant linear trend started and when it ended.  It might be semantically true that there was a significant linear decrease in high school aged smoking over the entire period of our data 1991-2011; however, it's inexact, unrefined to give up after only detecting a linear trend.  The purpose of the following few steps is really to *cordon off* different time points from one another.  As you'll see later, there actually was not any detectable decrease from 1991-1999.  The entirety of the decline in smoking occurred over the period from 1999-2011.  So these next (methodologically tricky) steps serve to provide you and your audience with a more careful statement of statistical significance.  It's not technically wrong to conclude that smoking declined over the period of 1991-2011, it's just verbose.
+
+Think of it as the difference between "humans first walked on the moon in the sixties" and "humans first walked on the moon in 1969" - both statements are correct, but the latter exhibits greater scientific precision.**
 
 -----
-&nbsp;  
 
 Calculate the "ever smoked" binomial regression, adjusted by sex, age, race-ethnicity, and both linear and quadratic year contrasts.  Notice the addition of `t11q`.
 
@@ -642,18 +642,18 @@ summary( os )
 ## 
 ## Estimated Break-Point(s):
 ##      Est.   St.Err 
-## 1998.719    0.387 
+## 1998.701    0.386 
 ## 
 ## Meaningful coefficients of the linear terms:
 ##              Estimate Std. Error t value Pr(>|t|)
-## (Intercept) -4.720786   4.728729  -0.998    0.351
-## yr           0.002188   0.002372   0.922    0.387
-## U1.yr       -0.042164   0.002899 -14.543       NA
+## (Intercept) -4.871203   4.735422  -1.029    0.338
+## yr           0.002263   0.002375   0.953    0.372
+## U1.yr       -0.042200   0.002903 -14.535       NA
 ## 
-## Residual standard error: 0.7539 on 7 degrees of freedom
-## Multiple R-Squared: 0.9936,  Adjusted R-squared: 0.9909 
+## Residual standard error: 0.755 on 7 degrees of freedom
+## Multiple R-Squared: 0.9936,  Adjusted R-squared: 0.9908 
 ## 
-## Convergence attained in 2 iterations with relative change 2.442197e-16
+## Convergence attained in 2 iterations with relative change -4.884394e-16
 ```
 
 See the `Estimated Break-Point(s)` in that result?  That's the critical number from this joinpoint analysis.
@@ -679,9 +679,9 @@ slope( os , APC = TRUE )
 
 ```
 ## $yr
-##          Est. CI(95%).l CI(95%).u
-## slope1  0.219   -0.3414    0.7826
-## slope2 -3.919   -4.2970   -3.5390
+##           Est. CI(95%).l CI(95%).u
+## slope1  0.2266   -0.3347     0.791
+## slope2 -3.9150   -4.2940    -3.535
 ```
 
 The returned CIs for the annual percent change (APC) may be different from the ones returned by [NCI's Joinpoint Software](surveillance.cancer.gov/joinpoint/); for further details, check out [Muggeo V. (2010) A Comment on `Estimating average annual per cent change in trend analysis' by Clegg et al., Statistics in Medicine; 28, 3670-3682. Statistics in Medicine, 29, 1958-1960.](http://onlinelibrary.wiley.com/doi/10.1002/sim.3850/abstract)
