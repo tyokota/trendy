@@ -201,7 +201,7 @@ hr {
 </head>
 
 <body>
-<p>guest post by my friend <a href="mailto:thomasyokota@gmail.com">thomas yokota</a>, an oahu-based epidemiologist.  palmero professor <a href="mailto:vito.muggeo@unipa.it">vito muggeo</a> wrote the joinpoint analysis section of the code below to demonstrate that <a href="https://cran.r-project.org/web/packages/segmented/index.html">the <code>segmented</code> package</a> eliminates the need for <a href="http://surveillance.cancer.gov/joinpoint/download.html">external (registration-only, windows-only, workflow-disrupting) software</a>.  <a href="http://r-survey.r-forge.r-project.org/survey/"><code>survey</code> package</a> creator and professor <a href="t.lumley@auckland.ac.nz">thomas lumley</a> wrote <a href="https://gist.github.com/tslumley/2e74cd0ac12a671d2724">the <code>svypredmarg</code> function</a> for us to replicate SUDAAN&#39;s <code>PREDMARG</code> command and match the cdc to the decimal.  <a href="mailto:rxl1@cdc.gov">richard lowry, m.d.</a> at the centers for disease control &amp; prevention wrote <a href="http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_conducting_trend_analyses.pdf">the original linear trend analysis</a> and then answered our infinite questions.  thanks to everyone.</p>
+<p>guest post by my friend <a href="mailto:thomasyokota@gmail.com">thomas yokota</a>, an oahu-based epidemiologist.  palmero professor <a href="mailto:vito.muggeo@unipa.it">vito muggeo</a> wrote the joinpoint analysis section of the code below to demonstrate that <a href="https://cran.r-project.org/web/packages/segmented/index.html">the <code>segmented</code> package</a> eliminates the need for <a href="http://surveillance.cancer.gov/joinpoint/download.html">external (registration-only, windows-only, workflow-disrupting) software</a>.  <a href="http://r-survey.r-forge.r-project.org/survey/"><code>survey</code> package</a> creator and professor <a href="mailto:t.lumley@auckland.ac.nz">thomas lumley</a> wrote <a href="https://gist.github.com/tslumley/2e74cd0ac12a671d2724">the <code>svypredmarg</code> function</a> for us to replicate SUDAAN&#39;s <code>PREDMARG</code> command and match the cdc to the decimal.  <a href="mailto:rxl1@cdc.gov">richard lowry, m.d.</a> at the centers for disease control &amp; prevention wrote <a href="http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_conducting_trend_analyses.pdf">the original linear trend analysis</a> and then answered our infinite questions.  thanks to everyone.</p>
 
 <hr/>
 
@@ -815,18 +815,18 @@ summary( os )
 ## 
 ## Estimated Break-Point(s):
 ##      Est.   St.Err 
-## 1998.702    0.386 
+## 1998.713    0.387 
 ## 
 ## Meaningful coefficients of the linear terms:
 ##              Estimate Std. Error t value Pr(&gt;|t|)
-## (Intercept) -4.863149   4.735026  -1.027    0.339
-## yr           0.002259   0.002375   0.951    0.373
-## U1.yr       -0.042198   0.002903 -14.535       NA
+## (Intercept) -4.769817   4.730750  -1.008    0.347
+## yr           0.002212   0.002373   0.932    0.382
+## U1.yr       -0.042176   0.002901 -14.541       NA
 ## 
-## Residual standard error: 0.7549 on 7 degrees of freedom
+## Residual standard error: 0.7542 on 7 degrees of freedom
 ## Multiple R-Squared: 0.9936,  Adjusted R-squared: 0.9908 
 ## 
-## Convergence attained in 2 iterations with relative change 2.035164e-15
+## Convergence attained in 2 iterations with relative change 1.790944e-15
 </code></pre>
 
 <p>See the <code>Estimated Break-Point(s)</code> in that result?  That&#39;s the critical number from this joinpoint analysis.</p>
@@ -848,8 +848,8 @@ slope( os , APC = TRUE )
 
 <pre class="r-output"><code class="r-output">## $yr
 ##           Est. CI(95%).l CI(95%).u
-## slope1  0.2262   -0.3351    0.7905
-## slope2 -3.9150   -4.2940   -3.5350
+## slope1  0.2215   -0.3392    0.7853
+## slope2 -3.9180   -4.2960   -3.5380
 </code></pre>
 
 <p>The returned CIs for the annual percent change (APC) may be different from the ones returned by <a href="surveillance.cancer.gov/joinpoint/">NCI&#39;s Joinpoint Software</a>; for further details, check out <a href="http://onlinelibrary.wiley.com/doi/10.1002/sim.3850/abstract">Muggeo V. (2010) A Comment on Estimating average annual per cent change in trend analysis&#39; by Clegg et al., Statistics in Medicine; 28, 3670-3682. Statistics in Medicine, 29, 1958-1960.</a></p>

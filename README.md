@@ -5,7 +5,7 @@ date: "September 22, 2015"
 output: html_document
 ---
 
-guest post by my friend [thomas yokota](mailto:thomasyokota@gmail.com), an oahu-based epidemiologist.  palmero professor [vito muggeo](mailto:vito.muggeo@unipa.it) wrote the joinpoint analysis section of the code below to demonstrate that [the `segmented` package](https://cran.r-project.org/web/packages/segmented/index.html) eliminates the need for [external (registration-only, windows-only, workflow-disrupting) software](http://surveillance.cancer.gov/joinpoint/download.html).  [`survey` package](http://r-survey.r-forge.r-project.org/survey/) creator and professor [thomas lumley](t.lumley@auckland.ac.nz) wrote [the `svypredmarg` function](https://gist.github.com/tslumley/2e74cd0ac12a671d2724) for us to replicate SUDAAN's `PREDMARG` command and match the cdc to the decimal.  [richard lowry, m.d.](mailto:rxl1@cdc.gov) at the centers for disease control & prevention wrote [the original linear trend analysis](http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_conducting_trend_analyses.pdf) and then answered our infinite questions.  thanks to everyone.
+guest post by my friend [thomas yokota](mailto:thomasyokota@gmail.com), an oahu-based epidemiologist.  palmero professor [vito muggeo](mailto:vito.muggeo@unipa.it) wrote the joinpoint analysis section of the code below to demonstrate that [the `segmented` package](https://cran.r-project.org/web/packages/segmented/index.html) eliminates the need for [external (registration-only, windows-only, workflow-disrupting) software](http://surveillance.cancer.gov/joinpoint/download.html).  [`survey` package](http://r-survey.r-forge.r-project.org/survey/) creator and professor [thomas lumley](mailto:t.lumley@auckland.ac.nz) wrote [the `svypredmarg` function](https://gist.github.com/tslumley/2e74cd0ac12a671d2724) for us to replicate SUDAAN's `PREDMARG` command and match the cdc to the decimal.  [richard lowry, m.d.](mailto:rxl1@cdc.gov) at the centers for disease control & prevention wrote [the original linear trend analysis](http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_conducting_trend_analyses.pdf) and then answered our infinite questions.  thanks to everyone.
 
 
 -----
@@ -642,18 +642,18 @@ summary( os )
 ## 
 ## Estimated Break-Point(s):
 ##      Est.   St.Err 
-## 1998.702    0.386 
+## 1998.713    0.387 
 ## 
 ## Meaningful coefficients of the linear terms:
 ##              Estimate Std. Error t value Pr(>|t|)
-## (Intercept) -4.863149   4.735026  -1.027    0.339
-## yr           0.002259   0.002375   0.951    0.373
-## U1.yr       -0.042198   0.002903 -14.535       NA
+## (Intercept) -4.769817   4.730750  -1.008    0.347
+## yr           0.002212   0.002373   0.932    0.382
+## U1.yr       -0.042176   0.002901 -14.541       NA
 ## 
-## Residual standard error: 0.7549 on 7 degrees of freedom
+## Residual standard error: 0.7542 on 7 degrees of freedom
 ## Multiple R-Squared: 0.9936,  Adjusted R-squared: 0.9908 
 ## 
-## Convergence attained in 2 iterations with relative change 2.035164e-15
+## Convergence attained in 2 iterations with relative change 1.790944e-15
 ```
 
 See the `Estimated Break-Point(s)` in that result?  That's the critical number from this joinpoint analysis.
@@ -680,8 +680,8 @@ slope( os , APC = TRUE )
 ```
 ## $yr
 ##           Est. CI(95%).l CI(95%).u
-## slope1  0.2262   -0.3351    0.7905
-## slope2 -3.9150   -4.2940   -3.5350
+## slope1  0.2215   -0.3392    0.7853
+## slope2 -3.9180   -4.2960   -3.5380
 ```
 
 The returned CIs for the annual percent change (APC) may be different from the ones returned by [NCI's Joinpoint Software](surveillance.cancer.gov/joinpoint/); for further details, check out [Muggeo V. (2010) A Comment on `Estimating average annual per cent change in trend analysis' by Clegg et al., Statistics in Medicine; 28, 3670-3682. Statistics in Medicine, 29, 1958-1960.](http://onlinelibrary.wiley.com/doi/10.1002/sim.3850/abstract)
