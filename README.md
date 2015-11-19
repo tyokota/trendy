@@ -10,7 +10,9 @@ guest post by my friend [thomas yokota](mailto:thomasyokota@gmail.com), an oahu-
 
 -----
 &nbsp;  
-#### The purpose of this analysis is to make statistically valid statements such as, *"there was a significant linear decrease in the prevalence of high school aged americans who have ever smoked a cigarette across the period 1999-2011"* with complex sample survey data.
+
+
+The purpose of this analysis is to make statistically valid statements such as, *"there was a significant linear decrease in the prevalence of high school aged americans who have ever smoked a cigarette across the period 1999-2011"* with complex sample survey data.
 
 This step-by-step walkthrough exactly reproduces the statistics presented in the [Center for Disease Control & Prevention's (CDC) linear trend analysis](http://www.cdc.gov/healthyyouth/yrbs/pdf/yrbs_conducting_trend_analyses.pdf), using free and open source methods rather than proprietary or restricted software.
 
@@ -618,18 +620,18 @@ summary( os )
 ## 
 ## Estimated Break-Point(s):
 ##      Est.   St.Err 
-## 1998.708    0.386 
+## 1998.703    0.386 
 ## 
 ## Meaningful coefficients of the linear terms:
 ##              Estimate Std. Error t value Pr(>|t|)
-## (Intercept) -4.818209   4.732896  -1.018    0.343
-## yr           0.002236   0.002374   0.942    0.377
-## U1.yr       -0.042188   0.002902 -14.538       NA
+## (Intercept) -4.857961   4.734774  -1.026    0.339
+## yr           0.002256   0.002375   0.950    0.374
+## U1.yr       -0.042197   0.002903 -14.536       NA
 ## 
-## Residual standard error: 0.7546 on 7 degrees of freedom
+## Residual standard error: 0.7549 on 7 degrees of freedom
 ## Multiple R-Squared: 0.9936,  Adjusted R-squared: 0.9908 
 ## 
-## Convergence attained in 2 iterations with relative change 7.32659e-16
+## Convergence attained in 2 iterations with relative change 2.442197e-15
 ```
 
 See the `Estimated Break-Point(s)` in that result?  that's the critical number from this joinpoint analysis.
@@ -656,8 +658,8 @@ slope( os , APC = TRUE )
 ```
 ## $yr
 ##           Est. CI(95%).l CI(95%).u
-## slope1  0.2239   -0.3371     0.788
-## slope2 -3.9160   -4.2950    -3.536
+## slope1  0.2259   -0.3353    0.7903
+## slope2 -3.9150   -4.2940   -3.5350
 ```
 
 The returned CIs for the APC may be different from the ones returned by [NCI's Joinpoint Software](surveillance.cancer.gov/joinpoint/); for further details, check out [Muggeo V. (2010) A Comment on `Estimating average annual per cent change in trend analysis' by Clegg et al., Statistics in Medicine; 28, 3670-3682. Statistics in Medicine, 29, 1958-1960.](http://onlinelibrary.wiley.com/doi/10.1002/sim.3850/abstract)
