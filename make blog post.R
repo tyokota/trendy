@@ -1,0 +1,8 @@
+library(knitr)
+setwd("C:/Users/anthonyd.KFF/Google Drive/private/trendy/")
+opts_knit$set(root.dir = "C:/my directory/yrbss")
+knit2html("C:/Users/anthonyd.KFF/Google Drive/private/trendy/README.Rmd")
+tmp <- readLines("README.html")
+tmp <- gsub("<pre><code class=\"r\">", "<pre class=\"language-r\"><code class=\"language-r\">", tmp)
+tmp <- gsub("<pre><code>", "<pre class=\"r-output\"><code class=\"r-output\">", tmp)
+writeLines(tmp, "README.html")
